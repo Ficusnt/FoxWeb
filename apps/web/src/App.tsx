@@ -2,36 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DataInputPage } from "./pages/DataInput";
 import { OptionsPage } from "./pages/Options";
 import { PDFPage } from "./pages/PDFPage";
-import { LoginPage } from "./pages/Login";
-import { useApi } from "./hooks/useApi";
-import { useEffect, useState } from "react";
-
-const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode; authenticated: boolean }) => {
-  return authenticated ? <>{children}</> : <Navigate to="/login" replace />;
-};
 
 export default function App() {
-  const api = useApi();
-  const [checking, setChecking] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
-
-  useEffect(() => {
-    api.checkAuth().then(({ authenticated: auth }) => {
-      setAuthenticated(auth);
-      setChecking(false);
-    });
-  }, [api]);
-
-  if (checking) {
-    return (
-      <BrowserRouter>
-        <div className="min-h-screen bg-fox-gray flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fox-blue"></div>
-        </div>
-      </BrowserRouter>
-    );
-  }
-
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-fox-gray">
@@ -51,11 +23,10 @@ export default function App() {
 
         <main className="py-8">
           <Routes>
-            <Route path="/" element={<Navigate to={authenticated ? "/options" : "/login"} replace />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/data" element={<ProtectedRoute authenticated={authenticated}><DataInputPage /></ProtectedRoute>} />
-            <Route path="/options" element={<ProtectedRoute authenticated={authenticated}><OptionsPage /></ProtectedRoute>} />
-            <Route path="/pdf" element={<ProtectedRoute authenticated={authenticated}><PDFPage /></ProtectedRoute>} />
+            <Route path="/" element={<Navigate to="/options" replace />} />
+            <Route path="/data" element={<DataInputPage />} />
+            <Route path="/options" element={<OptionsPage />} />
+            <Route path="/pdf" element={<PDFPage />} />
           </Routes>
         </main>
       </div>
