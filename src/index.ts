@@ -8,7 +8,7 @@ import type { Env } from "./types/index";
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.use("*", cors({ origin: "https://92fb0144.fox-web.pages.dev", credentials: true }));
+app.use("*", cors({ origin: "https://fox-web.ficus.workers.dev", credentials: true }));
 
 app.route("/api/auth", authRoutes);
 app.route("/api/tables", tableRoutes);

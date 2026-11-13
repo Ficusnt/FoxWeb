@@ -6,8 +6,6 @@ import type { Env } from "../types/index";
 
 const tables = new Hono<{ Bindings: Env }>();
 
-tables.use("*", authMiddleware);
-
 tables.get("/", async (c) => {
   return c.json({ tables: TABLES });
 });
@@ -21,7 +19,7 @@ tables.get("/:id", async (c) => {
   return c.json({ table });
 });
 
-tables.post("/refresh", async (c) => {
+tables.post("/refresh", authMiddleware, async (c) => {
   const { refreshAllTables } = await import("../lib/scraper");
   const result = await refreshAllTables({
     TABLES_KV: c.env.TABLES_KV,
