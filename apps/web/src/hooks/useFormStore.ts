@@ -49,6 +49,14 @@ export const useFormStore = create<FormState>()(
 
       clearRows: () => set({ rows: [] }),
 
+      setSelectedTables: (tables: string[]) => set({ selectedTables: tables }),
+
+      setSelectedPercentage: (pct: number | null) =>
+        set({ selectedPercentage: pct }),
+
+      setUploadedPdfFileName: (name: string | null) =>
+        set({ uploadedPdfFileName: name }),
+
       setSelectedTables: (ids: string[]) => set({ selectedTables: ids }),
 
       setSourceType: (type: "tablas" | "porcentaje" | null) =>

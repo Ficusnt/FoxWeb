@@ -14,7 +14,8 @@ export const Step2Page: React.FC = () => {
     updateRow,
     clearRows,
     sourceType,
-    setStep,
+    setSelectedPercentage,
+    setUploadedPdfFileName,
   } = useFormStore();
 
   const handleContinue = () => {
@@ -47,7 +48,7 @@ export const Step2Page: React.FC = () => {
             Fuente seleccionada:{" "}
             {sourceType === "tablas" ? "TABLAS" : "PORCENTAJE"}
           </div>
-          <PDFUpload />
+          <PDFUpload onFile={(file) => setUploadedPdfFileName(file.name)} />
           <DataTable
             rows={rows}
             onUpdateRow={updateRow}
