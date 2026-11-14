@@ -35,6 +35,7 @@ export type SessionData = {
 
 export type Env = {
   TABLES_KV: KVNamespace;
+  __STATIC_CONTENT: KVNamespace;
   AGENDAE_USUARIO?: string;
   AGENDAE_PASSWORD?: string;
   SESSION_SECRET?: string;
