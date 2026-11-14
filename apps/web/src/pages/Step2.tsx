@@ -2,7 +2,7 @@ import React from "react";
 import { useFormStore } from "../hooks/useFormStore";
 import { Stepper } from "../components/Stepper";
 import { DataTable } from "../components/DataTable";
-import { CSVUpload } from "../components/CSVUpload";
+import { PDFUpload } from "../components/PDFUpload";
 import { useNavigate } from "react-router-dom";
 
 export const Step2Page: React.FC = () => {
@@ -12,7 +12,6 @@ export const Step2Page: React.FC = () => {
     addRow,
     removeRow,
     updateRow,
-    loadCSV,
     clearRows,
     sourceType,
     setStep,
@@ -41,13 +40,14 @@ export const Step2Page: React.FC = () => {
             Paso 2: Ingresar Datos
           </h2>
           <p className="text-gray-600 mb-6">
-            Ingresa los coeficientes mes por mes. Puedes agregar filas manualmente o importar desde un CSV.
+            Ingresa los coeficientes mes por mes. Agrega filas manualmente o
+            sube un archivo PDF de origen.
           </p>
           <div className="mb-4 text-xs text-gray-500">
             Fuente seleccionada:{" "}
             {sourceType === "tablas" ? "TABLAS" : "PORCENTAJE"}
           </div>
-          <CSVUpload onLoad={loadCSV} />
+          <PDFUpload />
           <DataTable
             rows={rows}
             onUpdateRow={updateRow}
