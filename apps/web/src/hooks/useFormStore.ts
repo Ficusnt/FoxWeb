@@ -8,16 +8,21 @@ const initialRows: CoefficientRow[] = [{ fecha: "", capital: 0 }];
 export const useFormStore = create<FormState>()(
   persist(
     (set) => ({
+      // Step 1: Source selection
+      sourceType: null,
+      // Step workflow
+      currentStep: 1,
+      // Step 2: Data input
       rows: initialRows,
-      selectedTableId: null,
-      admin: "",
-      edificio: "",
-      unidad: "",
-      mode: "tabla",
+      selectedTables: [],
+      selectedPercentage: null,
+      // Step 3: PDF metadata
+      adminName: "",
+      street: "",
+      unit: "",
+      // Step 3: PDF output
       pdfBlob: null,
       pdfUrl: null,
-
-      setRows: (rows: CoefficientRow[]) => set({ rows }),
 
       addRow: () =>
         set((state) => ({
@@ -42,21 +47,63 @@ export const useFormStore = create<FormState>()(
 
       loadCSV: (rows: CoefficientRow[]) => set({ rows }),
 
-      setSelectedTable: (id: string | null) => set({ selectedTableId: id }),
+      setSelectedTables: (ids: string[]) => set({ selectedTables: ids }),
+
+      setSourceType: (type: "tablas" | "porcentaje" | null) =>
+        set({ sourceType: type }),
+
+      setSelectedPercentage: (pct: number | null) =>
+        set({ selectedPercentage: pct }),
+
+      setStep: (step: 1 | 2 | 2.5 | 3) => set({ currentStep: step }),
+
+      nextStep: () =>
+        set((state) => {
+          const order: Array<1 | 2 | 2.5 | 3> = [1, 2, 2.5, 3];
+          const idx = order.indexOf(state.currentStep);
+          const next = order[Math.min(idx + 1, order.length - 1)];
+          return { currentStep: next };
+        }),
+
+      prevStep: () =>
+        set((state) => {
+          const order: Array<1 | 2 | 2.5 | 3> = [1, 2, 2.5, 3];
+          const idx = order.indexOf(state.currentStep);
+          const prev = order[Math.max(idx - 1, 0)];
+          return { currentStep: prev };
+        }),
+
+      resetToStep1: () =>
+        set({
+          currentStep: 1,
+          sourceType: null,
+          selectedTables: [],
+          selectedPercentage: null,
+          adminName: "",
+          street: "",
+          unit: "",
+          pdfBlob: null,
+          pdfUrl: null,
+        }),
 
       setFormFields: (fields: Partial<FormState>) => set(fields),
 
+      setPdfBlob: (blob: Blob | null) => set({ pdfBlob: blob }),
+
+      setPdfUrl: (url: string | null) => set({ pdfUrl: url }),
+
       generatePDF: async () => {
         const state = useFormStore.getState();
-        if (!state.selectedTableId || !state.admin || !state.edificio || !state.unidad) return;
+        if (!state.selectedTables.length && !state.selectedPercentage) return;
+        if (!state.adminName || !state.street || !state.unit) return;
 
         const params = {
-          tableId: state.selectedTableId,
-          tableName: state.selectedTableId,
-          admin: state.admin,
-          edificio: state.edificio,
-          unidad: state.unidad,
-          mode: state.mode,
+          tableId: state.selectedTables[0] ?? "",
+          tableName: state.selectedTables[0] ?? "",
+          admin: state.adminName,
+          edificio: state.street,
+          unidad: state.unit,
+          mode: state.sourceType === "tablas" ? ("tabla" as const) : ("porcentaje" as const),
           rows: state.rows,
         };
 
@@ -71,18 +118,16 @@ export const useFormStore = create<FormState>()(
         }
       },
 
-      setPdfBlob: (blob: Blob | null) => set({ pdfBlob: blob }),
-
-      setPdfUrl: (url: string | null) => set({ pdfUrl: url }),
-
       reset: () =>
         set({
+          currentStep: 1,
+          sourceType: null,
           rows: initialRows,
-          selectedTableId: null,
-          admin: "",
-          edificio: "",
-          unidad: "",
-          mode: "tabla",
+          selectedTables: [],
+          selectedPercentage: null,
+          adminName: "",
+          street: "",
+          unit: "",
           pdfBlob: null,
           pdfUrl: null,
         }),

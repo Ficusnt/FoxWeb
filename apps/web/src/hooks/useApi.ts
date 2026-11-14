@@ -14,6 +14,11 @@ export function useApi() {
   return {
     getTables: () => client.get("/tables").then((r) => r.data),
     getTable: (id: string) => client.get(`/tables/${id}`).then((r) => r.data),
+    getTableConfig: () => client.get("/tables/config").then((r) => r.data),
+    addTableToConfig: (table: { id: string; name: string; url: string; folder?: string }) =>
+      client.post("/tables/config", table).then((r) => r.data),
+    removeTableFromConfig: (id: string) =>
+      client.delete(`/tables/config/${id}`).then((r) => r.data),
     refreshTables: () =>
       client.post("/tables/refresh").then((r) => r.data),
     login: (creds: { usuario: string; password: string }) =>

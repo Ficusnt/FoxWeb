@@ -29,28 +29,37 @@ export type PDFParams = {
 };
 
 export type FormState = {
-  // Step 1: Data Input
+  // Step 1: Source selection
+  sourceType: "tablas" | "porcentaje" | null;
+  // Step workflow
+  currentStep: 1 | 2 | 2.5 | 3;
+  // Step 2: Data input
   rows: CoefficientRow[];
+  // Step 2.5: Percentage or table selection
+  selectedTables: string[];
+  selectedPercentage: number | null;
+  // Step 3: PDF metadata
+  adminName: string;
+  street: string;
+  unit: string;
+  // Step 3: PDF output
+  pdfBlob: Blob | null;
+  pdfUrl: string | null;
   // Actions
   addRow: () => void;
   removeRow: (index: number) => void;
   updateRow: (index: number, field: "fecha" | "capital", value: string | number) => void;
   loadCSV: (rows: CoefficientRow[]) => void;
-  // Step 2: Options
-  selectedTableId: string | null;
-  admin: string;
-  edificio: string;
-  unidad: string;
-  mode: "tabla" | "porcentaje";
-  // Step 3: PDF
-  pdfBlob: Blob | null;
-  pdfUrl: string | null;
-  // PDF actions
+  setSelectedTables: (ids: string[]) => void;
+  setSourceType: (type: "tablas" | "porcentaje" | null) => void;
+  setSelectedPercentage: (pct: number | null) => void;
+  setStep: (step: 1 | 2 | 2.5 | 3) => void;
+  nextStep: () => void;
+  prevStep: () => void;
+  resetToStep1: () => void;
+  setFormFields: (fields: Partial<FormState>) => void;
   setPdfBlob: (blob: Blob | null) => void;
   setPdfUrl: (url: string | null) => void;
-  // Form actions
-  setSelectedTable: (id: string | null) => void;
-  setFormFields: (fields: Partial<FormState>) => void;
   generatePDF: () => Promise<void>;
   reset: () => void;
 };

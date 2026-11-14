@@ -1,6 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-import type { CoefficientRow, CoefficientTable } from "../types/index";
-import { TABLES } from "../data/tables";
+import type { CoefficientRow, CoefficientTable, TableConfig } from "../types/index";
 import { normalizeDate, normalizeNumber } from "./csv";
 
 const LOGIN_ENDPOINT = "_login.aspx";
@@ -88,6 +87,7 @@ export async function fetchTable(
  */
 export async function refreshAllTables(
   env: { TABLES_KV: KVNamespace; AGENDAE_USUARIO?: string; AGENDAE_PASSWORD?: string },
+  tables: TableConfig[],
 ): Promise<{ updated: number; errors: Array<{ tableId: string; error: string }> }> {
   const session = createSession();
 
@@ -103,7 +103,7 @@ export async function refreshAllTables(
   const errors: Array<{ tableId: string; error: string }> = [];
   let updated = 0;
 
-  for (const table of TABLES) {
+  for (const table of tables) {
     try {
       const referer = table.url;
       const t = parseInt(table.url.split("t=")[1] ?? "0", 10);

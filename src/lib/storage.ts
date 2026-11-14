@@ -1,4 +1,31 @@
-import type { CoefficientTable } from "../types/index";
+import type { CoefficientTable, TableConfig } from "../types/index";
+
+const TABLES_CONFIG_KEY = "TABLES_CONFIG";
+const DEFAULT_RETENTION = 12;
+
+export async function getTablesConfig(kv: KVNamespace): Promise<{ tables: TableConfig[]; retention: number }> {
+  const raw = await kv.get(TABLES_CONFIG_KEY, "json");
+  if (!raw) return { tables: [], retention: DEFAULT_RETENTION };
+  return raw as unknown as { tables: TableConfig[]; retention: number };
+}
+
+export async function saveTablesConfig(kv: KVNamespace, config: { tables: TableConfig[]; retention: number }): Promise<void> {
+  await kv.put(TABLES_CONFIG_KEY, JSON.stringify(config));
+}
+
+export async function addTableToConfig(kv: KVNamespace, table: TableConfig): Promise<void> {
+  const config = await getTablesConfig(kv);
+  const exists = config.tables.find((t) => t.id === table.id);
+  if (exists) return;
+  config.tables.push(table);
+  await saveTablesConfig(kv, config);
+}
+
+export async function removeTableFromConfig(kv: KVNamespace, id: string): Promise<void> {
+  const config = await getTablesConfig(kv);
+  config.tables = config.tables.filter((t) => t.id !== id);
+  await saveTablesConfig(kv, config);
+}
 
 export async function saveTable(kv: KVNamespace, table: CoefficientTable): Promise<void> {
   await kv.put(table.id, JSON.stringify(table));

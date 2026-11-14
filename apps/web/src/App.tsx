@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { DataInputPage } from "./pages/DataInput";
-import { OptionsPage } from "./pages/Options";
-import { PDFPage } from "./pages/PDFPage";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Step1Page } from "./pages/Step1";
+import { Step2Page } from "./pages/Step2";
+import { Step25Page } from "./pages/Step25";
+import { Step3Page } from "./pages/Step3";
 
 export default function App() {
   return (
@@ -23,10 +24,10 @@ export default function App() {
 
         <main className="py-8">
           <Routes>
-            <Route path="/" element={<Navigate to="/options" replace />} />
-            <Route path="/data" element={<DataInputPage />} />
-            <Route path="/options" element={<OptionsPage />} />
-            <Route path="/pdf" element={<PDFPage />} />
+            <Route path="/" element={<Step1Page />} />
+            <Route path="/step2" element={<Step2Page />} />
+            <Route path="/step25" element={<Step25Page />} />
+            <Route path="/step3" element={<Step3Page />} />
           </Routes>
         </main>
       </div>
