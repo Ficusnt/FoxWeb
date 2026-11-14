@@ -99,35 +99,6 @@ export const Step1Page: React.FC = () => {
               Elige qué tipo de tabla quieres generar:
             </p>
 
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Agregar nueva tabla</h3>
-              <form onSubmit={handleAddTable} className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Nombre de la tabla"
-                    value={newTableName}
-                    onChange={(e) => setNewTableName(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fox-blue focus:outline-none"
-                  />
-                  <input
-                    type="url"
-                    placeholder="URL de Agendae"
-                    value={newTableUrl}
-                    onChange={(e) => setNewTableUrl(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fox-blue focus:outline-none"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={!newTableName.trim() || !newTableUrl.trim()}
-                  className="w-full py-2 bg-fox-blue text-white rounded-lg hover:bg-fox-dark transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium"
-                >
-                  Agregar Tabla
-                </button>
-              </form>
-            </div>
-
             <div className="space-y-3">
               <button
                 onClick={() => setSelectedSource("tablas")}
@@ -156,6 +127,40 @@ export const Step1Page: React.FC = () => {
                 Siguiente: Datos
               </button>
             </div>
+
+            <details className="mt-6 border border-gray-200 rounded-lg">
+              <summary className="cursor-pointer py-2 px-3 bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg list-none font-medium">
+                + Agregar tabla
+              </summary>
+              <div className="p-4 bg-gray-50 rounded-b-lg border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Agregar nueva tabla</h3>
+                <form onSubmit={handleAddTable} className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Nombre de la tabla"
+                      value={newTableName}
+                      onChange={(e) => setNewTableName(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fox-blue focus:outline-none"
+                    />
+                    <input
+                      type="url"
+                      placeholder="URL de Agendae"
+                      value={newTableUrl}
+                      onChange={(e) => setNewTableUrl(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fox-blue focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={!newTableName.trim() || !newTableUrl.trim()}
+                    className="w-full py-2 bg-fox-blue text-white rounded-lg hover:bg-fox-dark transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium"
+                  >
+                    Agregar Tabla
+                  </button>
+                </form>
+              </div>
+            </details>
           </div>
         )}
       </div>
