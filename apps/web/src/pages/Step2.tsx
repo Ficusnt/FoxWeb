@@ -7,8 +7,16 @@ import { useNavigate } from "react-router-dom";
 
 export const Step2Page: React.FC = () => {
   const navigate = useNavigate();
-  const { rows, addRow, removeRow, updateRow, loadCSV, sourceType, setStep } =
-    useFormStore();
+  const {
+    rows,
+    addRow,
+    removeRow,
+    updateRow,
+    loadCSV,
+    clearRows,
+    sourceType,
+    setStep,
+  } = useFormStore();
 
   const handleContinue = () => {
     const valid =
@@ -45,6 +53,7 @@ export const Step2Page: React.FC = () => {
             onUpdateRow={updateRow}
             onAddRow={addRow}
             onRemoveRow={removeRow}
+            onClearRows={clearRows}
           />
         </div>
         <div className="flex justify-between mt-6">

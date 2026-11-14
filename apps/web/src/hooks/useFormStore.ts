@@ -47,6 +47,8 @@ export const useFormStore = create<FormState>()(
 
       loadCSV: (rows: CoefficientRow[]) => set({ rows }),
 
+      clearRows: () => set({ rows: [] }),
+
       setSelectedTables: (ids: string[]) => set({ selectedTables: ids }),
 
       setSourceType: (type: "tablas" | "porcentaje" | null) =>

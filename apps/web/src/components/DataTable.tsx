@@ -6,6 +6,7 @@ interface DataTableProps {
   onUpdateRow: (index: number, field: "fecha" | "capital", value: string | number) => void;
   onAddRow: () => void;
   onRemoveRow: (index: number) => void;
+  onClearRows: () => void;
 }
 
 export const DataTable: React.FC<DataTableProps> = ({
@@ -13,17 +14,27 @@ export const DataTable: React.FC<DataTableProps> = ({
   onUpdateRow,
   onAddRow,
   onRemoveRow,
+  onClearRows,
 }) => {
   return (
     <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+      <div className="px-4 py-3 border-b border-gray-200 flex flex-wrap justify-between items-center gap-2">
         <h3 className="font-semibold text-gray-800">Datos de Coeficientes</h3>
-        <button
-          onClick={onAddRow}
-          className="text-xs bg-fox-blue text-white px-2 py-1 rounded hover:bg-fox-dark transition-colors"
-        >
-          + Agregar fila
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onClearRows}
+            disabled={rows.length === 0}
+            className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Eliminar todos
+          </button>
+          <button
+            onClick={onAddRow}
+            className="text-xs bg-fox-blue text-white px-2 py-1 rounded hover:bg-fox-dark transition-colors"
+          >
+            + Agregar fila
+          </button>
+        </div>
       </div>
       <table className="w-full text-left text-sm">
         <thead className="bg-gray-100">

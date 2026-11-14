@@ -50,6 +50,7 @@ export type FormState = {
   removeRow: (index: number) => void;
   updateRow: (index: number, field: "fecha" | "capital", value: string | number) => void;
   loadCSV: (rows: CoefficientRow[]) => void;
+  clearRows: () => void;
   setSelectedTables: (ids: string[]) => void;
   setSourceType: (type: "tablas" | "porcentaje" | null) => void;
   setSelectedPercentage: (pct: number | null) => void;
