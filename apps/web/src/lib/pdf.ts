@@ -1,5 +1,5 @@
-import { PDFDocument, rgb, StandardFonts } from \ pdf-lib\;
-import type { PDFParams } from \../types/index\;
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import type { PDFParams } from "../types/index";
 
 const PAGE_WIDTH = 595.28; // A4 portrait width in points
 const PAGE_HEIGHT = 841.89; // A4 portrait height in points
@@ -7,10 +7,8 @@ const MARGIN = 50;
 const ROW_HEIGHT = 20;
 const HEADER_ROW_HEIGHT = 24;
 
-export async function generatePercentPDF(
-  params: PDFParams
-): Promise<Uint8Array> {
-  return generateTablePDF({ ...params, mode: \porcentaje\ });
+export async function generatePercentPDF(params: PDFParams): Promise<Uint8Array> {
+  return generateTablePDF({ ...params, mode: "porcentaje" });
 }
 
 export async function generateTablePDF(params: PDFParams): Promise<Uint8Array> {
@@ -22,7 +20,7 @@ export async function generateTablePDF(params: PDFParams): Promise<Uint8Array> {
   let y = PAGE_HEIGHT - MARGIN;
 
   // Header info
-  page.drawText(Admin: , {
+  page.drawText("Admin", {
     x: MARGIN,
     y,
     size: 12,
@@ -30,7 +28,7 @@ export async function generateTablePDF(params: PDFParams): Promise<Uint8Array> {
     color: rgb(0, 0, 0),
   });
   y -= 18;
-  page.drawText(Edificio: , {
+  page.drawText("Edificio", {
     x: MARGIN,
     y,
     size: 12,
@@ -38,7 +36,7 @@ export async function generateTablePDF(params: PDFParams): Promise<Uint8Array> {
     color: rgb(0, 0, 0),
   });
   y -= 18;
-  page.drawText(Unidad: , {
+  page.drawText("Unidad", {
     x: MARGIN,
     y,
     size: 12,
@@ -48,7 +46,7 @@ export async function generateTablePDF(params: PDFParams): Promise<Uint8Array> {
   y -= 30;
 
   // Table title
-  const title = params.mode === \tabla\ ? \TABLA DE CAPITAL\ : \TABLA DE PORCENTAJE\;
+  const title = params.mode === "tablas" ? "TABLA DE CAPITAL" : "TABLA DE PORCENTAJE";
   page.drawText(title, {
     x: MARGIN,
     y,
@@ -72,26 +70,29 @@ export async function generateTablePDF(params: PDFParams): Promise<Uint8Array> {
     color: rgb(0.8, 0.8, 0.8),
   });
 
-  page.drawText(\FECHA\, {
+  page.drawText("FECHA", {
     x: col1X + 8,
     y: y - HEADER_ROW_HEIGHT + 10,
     size: 10,
     font: boldFont,
     color: rgb(1, 1, 1),
   });
-  page.drawText(params.mode === \tabla\ ? \CAPITAL\ : \PORCENTAJE\, {
-    x: col2X + 8,
-    y: y - HEADER_ROW_HEIGHT + 10,
-    size: 10,
-    font: boldFont,
-    color: rgb(1, 1, 1),
-  });
+  page.drawText(
+    params.mode === "tablas" ? "CAPITAL" : "PORCENTAJE",
+    {
+      x: col2X + 8,
+      y: y - HEADER_ROW_HEIGHT + 10,
+      size: 10,
+      font: boldFont,
+      color: rgb(1, 1, 1),
+    }
+  );
   y -= HEADER_ROW_HEIGHT;
 
   // Draw rows
   const sortedRows = [...params.rows].sort((a, b) => {
-    const [aM, aY] = a.fecha.split(\/\).map(Number);
-    const [bM, bY] = b.fecha.split(\/\).map(Number);
+    const [aM, aY] = a.fecha.split("/").map(Number);
+    const [bM, bY] = b.fecha.split("/").map(Number);
     if (aY !== bY) return aY - bY;
     return aM - bM;
   });
@@ -117,7 +118,7 @@ export async function generateTablePDF(params: PDFParams): Promise<Uint8Array> {
     });
 
     const value =
-      params.mode === \tabla\
+      params.mode === "tablas"
         ? row.capital.toFixed(2)
         : ((row.capital / 100) * 100).toFixed(2); // placeholder for percentage logic
 
@@ -141,7 +142,7 @@ export async function generateTablePDF(params: PDFParams): Promise<Uint8Array> {
     height: ROW_HEIGHT,
     color: rgb(0.8, 0.8, 0.8),
   });
-  page.drawText(\TOTAL\, {
+  page.drawText("TOTAL", {
     x: col1X + 8,
     y: y - ROW_HEIGHT + 6,
     size: 10,
@@ -161,9 +162,9 @@ export async function generateTablePDF(params: PDFParams): Promise<Uint8Array> {
 }
 
 export async function downloadPdf(pdfBytes: Uint8Array, filename: string) {
-  const blob = new Blob([pdfBytes as unknown as BlobPart], { type: \application/pdf\ });
+  const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement(\a\);
+  const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);

@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useFormStore } from "../hooks/useFormStore";
 import { Stepper } from "../components/Stepper";
 import { useNavigate } from "react-router-dom";
-import type { TableConfig } from "../types/index";
-
 interface TableRowOption {
   id: string;
   name: string;

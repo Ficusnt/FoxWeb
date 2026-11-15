@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Step1Page } from "./pages/Step1";
 import { Step2Page } from "./pages/Step2";
 import { Step25Page } from "./pages/Step25";
-import { Step3Page } from "./pages/Step3";
+import Step3Page from "./pages/Step3";
 
 export default function App() {
   return (

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useFormStore } from '../hooks/useFormStore';
 import { PDFUpload } from '../components/PDFUpload';
 
@@ -11,8 +11,8 @@ export default function Step3Page() {
     selectedTables,
     selectedPercentage,
     uploadedPdfFileName,
-    setStep
   } = useFormStore();
+
 
   const generatePDF = async () => {
     const { PDFDocument, rgb } = await import('pdf-lib');
@@ -29,7 +29,8 @@ Porcentaje: ${selectedPercentage || ''}`;
 
     page.drawText(text, { x: 50, y: 750, color: rgb(0, 0, 0) });
 
-    const blob = await doc.save();
+    const bytes = await doc.save();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

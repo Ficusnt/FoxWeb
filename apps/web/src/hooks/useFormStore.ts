@@ -1,33 +1,27 @@
-import { create } from \ zustand\;
-import { persist, createJSONStorage } from \zustand/middleware\;
-import type { FormState, CoefficientRow } from \../types/index\;
-import { generateTablePDF } from \../lib/pdf\;
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type { FormState, CoefficientRow } from "../types/index";
+import { generateTablePDF } from "../lib/pdf";
 
-const initialRows: CoefficientRow[] = [{ fecha: \\, capital: 0 }];
+const initialRows: CoefficientRow[] = [{ fecha: "", capital: 0 }];
 
 export const useFormStore = create<FormState>()(
   persist(
     (set) => ({
-      // Step 1: Source selection
       sourceType: null,
-      // Step workflow
       currentStep: 1,
-      // Step 2: Data input
       rows: initialRows,
       selectedTables: [],
       selectedPercentage: null,
-      // Step 3: PDF metadata
-      adminName: \\,
-      street: \\,
-      unit: \\,
-      // Step 3: PDF output
+      adminName: "",
+      street: "",
+      unit: "",
       pdfBlob: null,
       pdfUrl: null,
       uploadedPdfFileName: null,
-      // Actions
       addRow: () =>
         set((state) => ({
-          rows: [...state.rows, { fecha: \\, capital: 0 }],
+          rows: [...state.rows, { fecha: "", capital: 0 }],
         })),
 
       removeRow: (index: number) =>
@@ -35,10 +29,10 @@ export const useFormStore = create<FormState>()(
           rows: state.rows.filter((_, i) => i !== index),
         })),
 
-      updateRow: (index: number, field: \fecha\ | \capital\, value: string | number) =>
+      updateRow: (index: number, field: "fecha" | "capital", value: string | number) =>
         set((state) => {
           const newRows = [...state.rows];
-          if (field === \capital\) {
+          if (field === "capital") {
             newRows[index] = { ...newRows[index], capital: Number(value) };
           } else {
             newRows[index] = { ...newRows[index], fecha: String(value) };
@@ -54,7 +48,7 @@ export const useFormStore = create<FormState>()(
 
       setSelectedPercentage: (pct: number | null) => set({ selectedPercentage: pct }),
 
-      setSourceType: (type: \tablas\ | \porcentaje\ | null) => set({ sourceType: type }),
+      setSourceType: (type: "tablas" | "porcentaje" | null) => set({ sourceType: type }),
 
       setUploadedPdfFileName: (name: string | null) => set({ uploadedPdfFileName: name }),
 
@@ -82,9 +76,9 @@ export const useFormStore = create<FormState>()(
           sourceType: null,
           selectedTables: [],
           selectedPercentage: null,
-          adminName: \\,
-          street: \\,
-          unit: \\,
+          adminName: "",
+          street: "",
+          unit: "",
           pdfBlob: null,
           pdfUrl: null,
         }),
@@ -101,22 +95,22 @@ export const useFormStore = create<FormState>()(
         if (!state.adminName || !state.street || !state.unit) return;
 
         const params = {
-          tableId: state.selectedTables[0] ?? \\,
-          tableName: state.selectedTables[0] ?? \\,
+          tableId: state.selectedTables[0] ?? "",
+          tableName: state.selectedTables[0] ?? "",
           admin: state.adminName,
           edificio: state.street,
           unidad: state.unit,
-          mode: state.sourceType === \tablas\ ? (\tabla\ as const) : (\porcentaje\ as const),
+          mode: state.sourceType === "tablas" ? ("tablas" as const) : ("porcentaje" as const),
           rows: state.rows,
         };
 
         try {
           const pdfBytes = await generateTablePDF(params);
-          const blob = new Blob([pdfBytes] as unknown as BlobPart[], { type: \application/pdf\ });
+          const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
           const url = URL.createObjectURL(blob);
           set({ pdfBlob: blob, pdfUrl: url });
         } catch (err) {
-          console.error(\PDF generation failed:\, err);
+          console.error("PDF generation failed:", err);
           throw err;
         }
       },
@@ -128,16 +122,16 @@ export const useFormStore = create<FormState>()(
           rows: initialRows,
           selectedTables: [],
           selectedPercentage: null,
-          adminName: \\,
-          street: \\,
-          unit: \\,
+          adminName: "",
+          street: "",
+          unit: "",
           pdfBlob: null,
           pdfUrl: null,
         }),
     }),
     {
-      name: \foxweb-form-storage\,
+      name: "foxweb-form-storage",
       storage: createJSONStorage(() => localStorage),
-    },
+    }
   ),
 );

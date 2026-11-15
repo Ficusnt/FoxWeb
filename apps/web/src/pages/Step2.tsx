@@ -14,7 +14,8 @@ export const Step2Page: React.FC = () => {
     updateRow,
     clearRows,
     sourceType,
-    setSelectedPercentage,
+
+    setStep,
     setUploadedPdfFileName,
   } = useFormStore();
 
