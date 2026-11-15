@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useFormStore } from "../hooks/useFormStore";
-import { useApi } from "../hooks/useApi";
 import { Stepper } from "../components/Stepper";
 import { useNavigate } from "react-router-dom";
 import type { TableConfig } from "../types/index";
@@ -19,30 +18,14 @@ export const Step25Page: React.FC = () => {
     setSelectedPercentage,
     setStep,
   } = useFormStore();
-  const api = useApi();
   const [tables, setTables] = useState<TableRowOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [percentage, setPercentage] = useState("");
 
   useEffect(() => {
-    if (sourceType === "porcentaje") {
-      setLoading(false);
-      return;
-    }
-    api.getTableConfig().then((data) => {
-      const tables = data?.tables ?? [];
-      setTables(
-        tables.map((t: TableConfig) => ({
-          id: t.id,
-          name: t.name,
-          checked: false,
-        }))
-      );
-      setLoading(false);
-    }).catch(() => {
-      setTables([]);
-      setLoading(false);
-    });
+    // Client-side only: no API call needed since Step3 generates PDF client-side
+    // This avoids the 401 Unauthorized error from /pdf/generate endpoint
+    setLoading(false);
   }, [sourceType]);
 
   const handleToggle = (id: string) => {

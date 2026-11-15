@@ -48,6 +48,9 @@ Porcentaje: ${selectedPercentage || ''}`;
           <button onClick={generatePDF}>Descargar PDF</button>
         </div>
       )}
+      {!uploadedPdfFileName && (
+        <p className="text-sm text-gray-500">Nombre de archivo: aún no establecido</p>
+      )}
       <PDFUpload onFile={(file) => {
         useFormStore.getState().setUploadedPdfFileName(file.name);
       }} />
