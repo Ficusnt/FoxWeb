@@ -1,4 +1,5 @@
-import create from 'zustand';
+
+import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export interface FormState {
@@ -18,7 +19,7 @@ export interface FormState {
 export interface FormActions {
   addRow: (row: any) => void;
   removeRow: (index: number) => void;
-  updateRow: (index: number, data: any) => void;
+  updateRow: (index: number, field?: string, value?: string | number) => void;
   loadCSV: (csvText: string) => void;
   clearRows: () => void;
   setSelectedTables: (tables: string[]) => void;
@@ -36,6 +37,8 @@ export interface FormActions {
   reset: () => void;
 }
 
+export type FormStore = FormState & FormActions;
+
 const initialState: FormState = {
   currentStep: 1,
   rows: [],
@@ -50,40 +53,72 @@ const initialState: FormState = {
   uploadedPdfFileName: '',
 };
 
-const useFormStore = create(
-  persist(
-    (set) => ({
+export const useFormStore = create<FormStore>()(
+  persist<FormStore, [], [], Partial<FormState>>(
+    (set, get) => ({
       ...initialState,
-      addRow: (row: any) =>
-        set((state: FormState) => ({ rows: [...state.rows, row] })),
-      removeRow: (index: number) =>
-        set((state: FormState) => {
+
+      addRow: (row) =>
+        set((state) => ({
+          rows: [...state.rows, row],
+        })),
+
+      removeRow: (index) =>
+        set((state) => {
           const newRows = [...state.rows];
           newRows.splice(index, 1);
           return { rows: newRows };
         }),
-      updateRow: (index: number, data: any) =>
-        set((state: FormState) => {
+
+      updateRow: (index, field, value) =>
+        set((state) => {
           const newRows = [...state.rows];
-          newRows[index] = data;
+
+          if (field !== undefined && value !== undefined) {
+            newRows[index] = {
+              ...newRows[index],
+              [field]: value,
+            };
+          }
+
           return { rows: newRows };
         }),
-      loadCSV: (csvText: string) => {
+
+      loadCSV: (csvText) => {
         const lines = csvText.trim().split('\n');
-        const rows = lines.map((line) => line.split(',').map((cell) => cell.trim()));
+        const rows = lines.map((line) =>
+          line.split(',').map((cell) => cell.trim())
+        );
         set({ rows });
       },
+
       clearRows: () => set({ rows: [] }),
-      setSelectedTables: (tables: string[]) => set({ selectedTables: tables }),
-      setSelectedPercentage: (pct: number) => set({ selectedPercentage: pct }),
-      setSourceType: (type: string) => set({ sourceType: type }),
-      setUploadedPdfFileName: (name: string) =>
+
+      setSelectedTables: (tables) =>
+        set({ selectedTables: tables }),
+
+      setSelectedPercentage: (pct) =>
+        set({ selectedPercentage: pct }),
+
+      setSourceType: (type) =>
+        set({ sourceType: type }),
+
+      setUploadedPdfFileName: (name) =>
         set({ uploadedPdfFileName: name }),
-      setStep: (step: number) => set({ currentStep: step }),
+
+      setStep: (step) =>
+        set({ currentStep: step }),
+
       nextStep: () =>
-        set((state: FormState) => ({ currentStep: state.currentStep + 1 })),
+        set((state) => ({
+          currentStep: state.currentStep + 1,
+        })),
+
       prevStep: () =>
-        set((state: FormState) => ({ currentStep: state.currentStep - 1 })),
+        set((state) => ({
+          currentStep: state.currentStep - 1,
+        })),
+
       resetToStep1: () =>
         set({
           currentStep: 1,
@@ -95,26 +130,46 @@ const useFormStore = create(
           street: '',
           unit: '',
           uploadedPdfFileName: '',
+          pdfBlob: null,
+          pdfUrl: null,
         }),
-      setFormFields: (fields: Partial<FormState>) =>
-        set((state: FormState) => ({ ...state, ...fields })),
-      setPdfBlob: (blob: Blob) => set({ pdfBlob: blob }),
-      setPdfUrl: (url: string | null) => set({ pdfUrl: url }),
+
+      setFormFields: (fields) =>
+        set((state) => ({
+          ...state,
+          ...fields,
+        })),
+
+      setPdfBlob: (blob) =>
+        set({ pdfBlob: blob }),
+
+      setPdfUrl: (url) =>
+        set({ pdfUrl: url }),
+
       generatePDF: async () => {
-        const state = useFormStore.getState() as FormState;
-const { adminName, street, unit, selectedTables, selectedPercentage } = state;
+        const state = get();
+
+        const {
+          adminName,
+          street,
+          unit,
+          selectedTables,
+        } = state;
 
         // Validate required fields
         if (!adminName || !street || !unit) {
-          throw new Error('Please fill in all required fields (admin name, street, unit)');
+          throw new Error(
+            'Please fill in all required fields (admin name, street, unit)'
+          );
         }
 
         if (selectedTables.length === 0) {
           throw new Error('Please select at least one table');
         }
 
-        // Call the PDF generation function from lib/pdf.ts
+        // Generate PDF
         const { generateTablePDF } = await import('../lib/pdf');
+
         const pdfBytes = await generateTablePDF({
           tableId: selectedTables[0] || '',
           tableName: selectedTables[0] || '',
@@ -125,47 +180,67 @@ const { adminName, street, unit, selectedTables, selectedPercentage } = state;
           rows: state.rows,
         });
 
-        // Convert Uint8Array to Blob and create URL
-        const pdfBlob = new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
+        // Convert Uint8Array to a standard ArrayBuffer
+        const buffer = new ArrayBuffer(pdfBytes.byteLength);
+        new Uint8Array(buffer).set(pdfBytes);
+
+        const pdfBlob = new Blob([buffer], {
+          type: 'application/pdf',
+        });
+
         const pdfUrl = URL.createObjectURL(pdfBlob);
+
         set({ pdfBlob, pdfUrl });
       },
-      reset: () => set({ ...initialState }),
+
+      reset: () => {
+        const currentUrl = get().pdfUrl;
+
+        if (currentUrl) {
+          URL.revokeObjectURL(currentUrl);
+        }
+
+        set({ ...initialState });
+      },
     }),
     {
       name: 'form-store',
+
       storage: {
         getItem: (name) => {
           const str = sessionStorage.getItem(name);
           return str ? JSON.parse(str) : null;
         },
+
         setItem: (name, value) => {
           sessionStorage.setItem(name, JSON.stringify(value));
         },
+
         removeItem: (name) => {
           sessionStorage.removeItem(name);
         },
       },
-      // Reset uploadedPdfFileName on step reset to avoid stale values
-      // Exclude pdfBlob and pdfUrl - they're not JSON-serializable (Blob, object URLs)
-      partialize: (state: FormState) => ({
+
+      // Persist only serializable data
+      partialize: (state) => ({
         currentStep: state.currentStep,
-        rows: state.rows,
+
+        rows: state.rows.map((row: any) => ({
+          fecha: row?.fecha ?? '',
+          capital: row?.capital ?? 0,
+        })),
+
         selectedTables: state.selectedTables,
         selectedPercentage: state.selectedPercentage,
         sourceType: state.sourceType,
         adminName: state.adminName,
         street: state.street,
         unit: state.unit,
-        // Exclude all non-serializable properties (Blob, object URLs, React elements, etc.)
-        // Only include properties that can be safely serialized to JSON
+        uploadedPdfFileName: state.uploadedPdfFileName,
       }),
     }
   )
 );
-
-// Named export matching import { useFormStore } from "../hooks/useFormStore"
-export { useFormStore as useFormStore };
 
 // Default export for compatibility
 export default useFormStore;
