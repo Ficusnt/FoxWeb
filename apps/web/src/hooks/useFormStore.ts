@@ -140,6 +140,7 @@ const useFormStore = create(
         },
       },
       // Reset uploadedPdfFileName on step reset to avoid stale values
+      // Exclude pdfBlob and pdfUrl - they're not JSON-serializable (Blob, object URLs)
       partialize: (state) => ({
         currentStep: state.currentStep,
         rows: state.rows,
@@ -149,8 +150,6 @@ const useFormStore = create(
         adminName: state.adminName,
         street: state.street,
         unit: state.unit,
-        pdfBlob: state.pdfBlob,
-        pdfUrl: state.pdfUrl,
         // uploadedPdfFileName is excluded from persist and reset manually
       }),
     }
