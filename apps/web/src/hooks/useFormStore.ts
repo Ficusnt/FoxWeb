@@ -157,7 +157,8 @@ const { adminName, street, unit, selectedTables, selectedPercentage } = state;
         adminName: state.adminName,
         street: state.street,
         unit: state.unit,
-        // Exclude non-serializable properties
+        // Exclude all non-serializable properties (Blob, object URLs, React elements, etc.)
+        // Only include properties that can be safely serialized to JSON
       }),
     }
   )

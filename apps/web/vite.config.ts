@@ -6,6 +6,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: true,
+    assetsInlineLimit: 0,
   },
   server: {
     port: 5173,
