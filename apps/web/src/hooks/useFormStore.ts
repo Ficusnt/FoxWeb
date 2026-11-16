@@ -118,7 +118,11 @@ const { adminName, street, unit, selectedTables, selectedPercentage } = state;
         const pdfBytes = await generateTablePDF({
           tableId: selectedTables[0] || '',
           tableName: selectedTables[0] || '',
+          admin: state.adminName,
+          edificio: state.street,
+          unidad: state.unit,
           mode: 'tablas',
+          rows: state.rows,
         });
 
         // Convert Uint8Array to Blob and create URL
@@ -153,7 +157,7 @@ const { adminName, street, unit, selectedTables, selectedPercentage } = state;
         adminName: state.adminName,
         street: state.street,
         unit: state.unit,
-        // uploadedPdfFileName is excluded from persist and reset manually
+        // Exclude non-serializable properties
       }),
     }
   )

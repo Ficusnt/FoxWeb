@@ -59,7 +59,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               <td className="px-4 py-2">
                 <input
                   type="text"
-                  value={row.capital.toString()}
+                  value={row.capital != null ? row.capital.toString() : ''}
                   placeholder="0.00"
                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-fox-blue"
                   onChange={(e) => onUpdateRow(index, "capital", e.target.value)}
