@@ -55,15 +55,15 @@ const useFormStore = create(
     (set) => ({
       ...initialState,
       addRow: (row: any) =>
-        set((state) => ({ rows: [...state.rows, row] })),
+        set((state: FormState) => ({ rows: [...state.rows, row] })),
       removeRow: (index: number) =>
-        set((state) => {
+        set((state: FormState) => {
           const newRows = [...state.rows];
           newRows.splice(index, 1);
           return { rows: newRows };
         }),
       updateRow: (index: number, data: any) =>
-        set((state) => {
+        set((state: FormState) => {
           const newRows = [...state.rows];
           newRows[index] = data;
           return { rows: newRows };
@@ -111,7 +111,8 @@ const useFormStore = create(
         }
 
         // Call the PDF generation function from lib/pdf.ts
-        const pdfBytes = await import('../lib/pdf').then(m => m.generateTablePDF)({
+        const { generateTablePDF } = await import('../lib/pdf');
+        const pdfBytes = await generateTablePDF({
           tables: selectedTables,
           percentage: selectedPercentage,
           mode: 'tablas',
