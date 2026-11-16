@@ -80,8 +80,10 @@ const useFormStore = create(
       setUploadedPdfFileName: (name: string) =>
         set({ uploadedPdfFileName: name }),
       setStep: (step: number) => set({ currentStep: step }),
-      nextStep: () => set((state) => ({ currentStep: state.currentStep + 1 })),
-      prevStep: () => set((state) => ({ currentStep: state.currentStep - 1 })),
+      nextStep: () =>
+        set((state: FormState) => ({ currentStep: state.currentStep + 1 })),
+      prevStep: () =>
+        set((state: FormState) => ({ currentStep: state.currentStep - 1 })),
       resetToStep1: () =>
         set({
           currentStep: 1,
@@ -95,11 +97,12 @@ const useFormStore = create(
           uploadedPdfFileName: '',
         }),
       setFormFields: (fields: Partial<FormState>) =>
-        set((state) => ({ ...state, ...fields })),
+        set((state: FormState) => ({ ...state, ...fields })),
       setPdfBlob: (blob: Blob) => set({ pdfBlob: blob }),
       setPdfUrl: (url: string | null) => set({ pdfUrl: url }),
       generatePDF: async () => {
-        const { adminName, street, unit, selectedTables, selectedPercentage } = useFormStore.getState();
+        const state = useFormStore.getState() as FormState;
+const { adminName, street, unit, selectedTables, selectedPercentage } = state;
 
         // Validate required fields
         if (!adminName || !street || !unit) {
@@ -113,8 +116,8 @@ const useFormStore = create(
         // Call the PDF generation function from lib/pdf.ts
         const { generateTablePDF } = await import('../lib/pdf');
         const pdfBytes = await generateTablePDF({
-          tables: selectedTables,
-          percentage: selectedPercentage,
+          tableId: selectedTables[0] || '',
+          tableName: selectedTables[0] || '',
           mode: 'tablas',
         });
 
@@ -141,7 +144,7 @@ const useFormStore = create(
       },
       // Reset uploadedPdfFileName on step reset to avoid stale values
       // Exclude pdfBlob and pdfUrl - they're not JSON-serializable (Blob, object URLs)
-      partialize: (state) => ({
+      partialize: (state: FormState) => ({
         currentStep: state.currentStep,
         rows: state.rows,
         selectedTables: state.selectedTables,
