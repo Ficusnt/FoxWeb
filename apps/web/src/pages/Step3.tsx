@@ -30,8 +30,8 @@ Porcentaje: ${selectedPercentage || ''}`;
     page.drawText(text, { x: 50, y: 750, color: rgb(0, 0, 0) });
 
     const bytes = await doc.save();
-    // doc.save() returns Uint8Array, convert to ArrayBuffer then to Blob
-    const blob = new Blob([bytes.buffer], { type: 'application/pdf' });
+    // doc.save() returns Uint8Array, pass directly to Blob
+    const blob = new Blob([bytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
