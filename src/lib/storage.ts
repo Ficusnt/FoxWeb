@@ -2,6 +2,7 @@ import type { CoefficientTable, TableConfig } from "../types/index";
 
 const TABLES_CONFIG_KEY = "TABLES_CONFIG";
 const DEFAULT_RETENTION = 12;
+const PDF_STORAGE_KEY_PREFIX = "pdf-";
 
 export async function getTablesConfig(kv: KVNamespace): Promise<{ tables: TableConfig[]; retention: number }> {
   const raw = await kv.get(TABLES_CONFIG_KEY, "json");
@@ -47,21 +48,40 @@ export async function deleteKey(kv: KVNamespace, key: string): Promise<void> {
   await kv.delete(key);
 }
 
-export async function pruneOldSnapshots(
-  kv: KVNamespace,
-  tableId: string,
-  keep: number,
-): Promise<void> {
-  const keys = await kv.list({ prefix: `${tableId}_` });
-  const snapshots = keys.keys
-    .map((k) => k.name)
-    .filter((name) => name.startsWith(`${tableId}_`))
-    .sort()
-    .reverse();
+/**
+ * PDF storage functions
+ */
 
-  // Keep `keep` most recent snapshots
-  const toDelete = snapshots.slice(keep);
-  for (const key of toDelete) {
-    await kv.delete(key);
-  }
+/**
+ * Save PDF content to storage
+ * @param tableId The table ID associated with the PDF
+ * @param pdfContent The PDF file content as ArrayBuffer
+ * @param fileName The original filename for download reference
+ */
+export async function savePdf(kv: KVNamespace, tableId: string, pdfContent: ArrayBuffer, fileName: string): Promise<void> {
+  const key = `${PDF_STORAGE_KEY_PREFIX}${tableId}`;
+  await kv.put(key, pdfContent);
+  await kv.put(`${key}_filename`, fileName);
+}
+
+/**
+ * Get PDF content by table ID
+ * @param tableId The table ID associated with the PDF
+ * @returns The PDF file content as ArrayBuffer or null if not found
+ */
+export async function getPdf(kv: KVNamespace, tableId: string): Promise<ArrayBuffer | null> {
+  const key = `${PDF_STORAGE_KEY_PREFIX}${tableId}`;
+  const pdfContent = await kv.get(key, "arraybuffer");
+  return pdfContent;
+}
+
+/**
+ * Get PDF filename by table ID
+ * @param tableId The table ID associated with the PDF
+ * @returns The filename or null if not found
+ */
+export async function getPdfFilename(kv: KVNamespace, tableId: string): Promise<string | null> {
+  const key = `${PDF_STORAGE_KEY_PREFIX}${tableId}`;
+  const fileName = await kv.get(`${key}_filename`, "text");
+  return fileName ? fileName : null;
 }

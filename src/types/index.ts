@@ -28,6 +28,12 @@ export type PDFParams = {
   rows: CoefficientRow[];
 };
 
+export type CalculationResult = {
+  globalMult: number;
+  rows: CoefficientRow[];
+  totalCapital: number;
+};
+
 export type SessionData = {
   authenticated: boolean;
   loggedInAt: string;
@@ -44,5 +50,6 @@ export type Env = {
 
 export type RefreshResult = {
   updated: number;
-  errors: { tableId: string; error: string }[];
+  errors: { tableId: string; error: string };
 };
+export type TableConfig = {
