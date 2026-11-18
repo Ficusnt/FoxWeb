@@ -1,2 +1,1 @@
-import type { CoefficientTable, TableConfig } from \
-../types/index\;
+import type { CoefficientTable, TableConfig } from "../types/index";

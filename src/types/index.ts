@@ -52,4 +52,3 @@ export type RefreshResult = {
   updated: number;
   errors: { tableId: string; error: string };
 };
-export type TableConfig = {

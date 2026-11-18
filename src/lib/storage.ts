@@ -71,8 +71,16 @@ export async function savePdf(kv: KVNamespace, tableId: string, pdfContent: Arra
  */
 export async function getPdf(kv: KVNamespace, tableId: string): Promise<ArrayBuffer | null> {
   const key = `${PDF_STORAGE_KEY_PREFIX}${tableId}`;
-  const pdfContent = await kv.get(key, "arraybuffer");
-  return pdfContent;
+  // Use get with string type first, then convert
+  const pdfContent = await kv.get(key, "text");
+  if (!pdfContent) return null;
+  // Convert text to ArrayBuffer
+  const buf = new ArrayBuffer(pdfContent.length);
+  const view = new Uint8Array(buf);
+  for (let i = 0; i < pdfContent.length; i++) {
+    view[i] = pdfContent.charCodeAt(i);
+  }
+  return buf;
 }
 
 /**
