@@ -9,16 +9,6 @@ export default function Home() {
   const navigate = useNavigate()
   const [scraperStatus, setScraperStatus] = useState<{ ok: boolean; message: string } | null>(null)
 
-  const checkHealth = async () => {
-    try {
-      const r = await fetch("/api/health")
-      const data = await r.json()
-      return data.ok
-    } catch {
-      return false
-    }
-  }
-
   const runScraper = async () => {
     setScraperStatus(null)
     try {

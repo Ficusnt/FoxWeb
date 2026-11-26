@@ -120,7 +120,7 @@ export default function DataEditor() {
       {/* Workflow ribbon */}
       <div className="flex px-4 py-4">
         <div
-          className={`px-4 py-1.5 rounded font-bold text-white ${ACCENT}`}
+          className={`px-4 py-1.5 rounded font-bold text-white`}
           style={{ background: ACCENT }}
         >
           Datos
