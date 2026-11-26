@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { CheckCircle, ArrowRight } from "lucide.react"
+import { CheckCircle, ArrowRight } from "lucide-react"
 import Layout from "../components/Layout"
 import Button from "../components/Button"
 
