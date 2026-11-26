@@ -1,20 +1,16 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Save, Play, ArrowLeft, Plus, Minus, LayoutList } from "lucide-react"
-import { saveInputRowsToLocal, loadInputRowsFromLocal } from "../lib/storage"
+import Layout from "../components/Layout"
+import Button from "../components/Button"
+import Card from "../components/Card"
+import {
+  saveInputRowsToLocal,
+  loadInputRowsFromLocal,
+} from "../lib/storage"
 import { normalizeDate, normalizeNumber, formatMoney } from "../lib/normalization"
 
-const BG = "#f5f5f5"
-const BG_TABLE = "#ffffff"
-const ACCENT = "#1565c0"
-const ACCENT_DARK = "#0d47a1"
-const BTN_DANGER = "#c62828"
-const BTN_NEUTRAL = "#546e7a"
-const FG_LIGHT = "#ffffff"
-const FG_DARK = "#212121"
-const ROW_ALT = "#e8eaf6"
-const BORDER = "#bdbdbd"
-const ERROR_BG = "#ffebee"
+const ERROR_BG = "#fef2f2"
 
 type Row = {
   id: string
@@ -32,7 +28,6 @@ export default function DataEditor() {
     return [{ id: "0", fecha: "", capital: "" }]
   })
   const [errors, setErrors] = useState<Set<number>>(new Set())
-  const [saving, setSaving] = useState(false)
 
   const total = rows.reduce((sum, r) => {
     try { return sum + normalizeNumber(r.capital) } catch { return sum }
@@ -67,18 +62,6 @@ export default function DataEditor() {
       next.delete(index)
       return next
     })
-  }
-
-  const persist = () => {
-    const valid: { date: string; capital: number }[] = []
-    for (const r of rows) {
-      if (r.fecha && r.capital) {
-        try {
-          valid.push({ date: normalizeDate(r.fecha), capital: normalizeNumber(r.capital) })
-        } catch { /* skip invalid */ }
-      }
-    }
-    saveInputRowsToLocal(valid)
   }
 
   const handleContinue = () => {
@@ -116,137 +99,122 @@ export default function DataEditor() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: BG }}>
-      {/* Workflow ribbon */}
-      <div className="flex px-4 py-4">
-        <div
-          className={`px-4 py-1.5 rounded font-bold text-white`}
-          style={{ background: ACCENT }}
-        >
-          Datos
+    <Layout>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Datos a calcular</h1>
+            <p className="text-sm text-gray-500">
+              Fecha: MM/AA  Capital: numero (ej. 15000 o 1.500,50)
+            </p>
+          </div>
+          <Button onClick={() => navigate("/")} variant="outline" size="sm">
+            <ArrowLeft size={16} /> Volver
+          </Button>
         </div>
-        <div className="mx-2 mt-1">➔</div>
-        <div className="px-4 py-1.5 font-bold text-gray-500" style={{ background: BTN_NEUTRAL, color: FG_LIGHT }}>
-          Opciones
+
+        <Card className="mb-6">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 w-12">#</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500">Fecha</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500">Capital</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 text-right"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, i) => {
+                  const isErr = errors.has(i)
+                  return (
+                    <tr
+                      key={row.id}
+                      className={`border-b border-gray-100 transition-colors ${
+                        i % 2 === 1 ? "bg-gray-50" : ""
+                      } ${isErr ? "bg-red-50" : ""}`}
+                    >
+                      <td className="px-4 py-3 text-xs text-gray-400 font-mono">{i + 1}</td>
+                      <td className="px-4 py-3">
+                        <input
+                          className={`w-full px-3 py-2 text-sm rounded border focus:ring-2 focus:ring-accent outline-none text-right font-mono ${
+                            isErr ? "border-red-500 ring-2 ring-red-500/20" : "border-gray-300"
+                          }`}
+                          value={row.fecha}
+                          onChange={e => updateField(i, "fecha", e.target.value)}
+                          placeholder="MM/AA"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          className={`w-full px-3 py-2 text-sm rounded border focus:ring-2 focus:ring-accent outline-none text-right font-mono ${
+                            isErr ? "border-red-500 ring-2 ring-red-500/20" : "border-gray-300"
+                          }`}
+                          value={row.capital}
+                          onChange={e => updateField(i, "capital", e.target.value)}
+                          placeholder="1.500,50"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => removeRow(i)}
+                            className="p-2 rounded hover:bg-gray-100 text-gray-500 hover:text-red-500"
+                            disabled={rows.length === 1}
+                            title="Eliminar"
+                          >
+                            {rows.length === 1 ? "~" : "−"}
+                          </button>
+                          <button
+                            onClick={() => addRow(i)}
+                            className="p-2 rounded hover:bg-accent/50 text-accent hover:bg-accent/100"
+                            title="Insertar debajo"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        <div className="flex items-end justify-between mb-6">
+          <div className="text-right">
+            <div className="text-2xl font-bold text-gray-900">{formatMoney(total)}</div>
+            <div className="text-xs text-gray-500">Total capital</div>
+          </div>
         </div>
-        <div className="mx-2 mt-1">➔</div>
-        <div className="px-4 py-1.5 font-bold text-gray-500" style={{ background: BTN_NEUTRAL, color: FG_LIGHT }}>
-          PDF
-        </div>
-      </div>
 
-      <h1 className="text-xl font-bold text-gray-800 px-4 pt-4">Datos a calcular</h1>
-      <p className="text-sm text-gray-500 px-4">
-        Fecha: MM/AA  Capital: numero (ej. 15000 o 1.500,50)
-      </p>
-
-      {/* Table header */}
-      <div className="flex px-4" style={{ background: ACCENT }}>
-        <div className="w-4 px-2 py-2 text-xs font-bold text-white" style={{ color: FG_LIGHT }}>#</div>
-        <div className="flex-1 px-2 py-2 text-xs font-bold text-white" style={{ color: FG_LIGHT }}>Fecha</div>
-        <div className="w-48 px-2 py-2 text-xs font-bold text-white" style={{ color: FG_LIGHT }}>Capital</div>
-        <div className="w-20 px-2 py-2 text-xs font-bold text-white" style={{ color: FG_LIGHT }}></div>
-      </div>
-
-      {/* Scrollable rows */}
-      <div className="px-4 max-h-[60vh] overflow-y-auto border border-gray-300" style={{ background: BG_TABLE }}>
-        {rows.map((row, i) => {
-          const isErr = errors.has(i)
-          const isLast = i === rows.length - 1
-          return (
-            <div
-              key={row.id}
-              className="flex items-center gap-2 px-2 py-1 border-b border-gray-200"
-              style={{
-                background: i % 2 === 1 ? ROW_ALT : BG_TABLE
-              }}
-            >
-              <div className="w-4 text-center text-xs text-gray-500 font-mono">{i + 1}</div>
-              <input
-                className="flex-1 text-sm px-1 py-1 border rounded text-right focus:ring-2 focus:ring-accent outline-none font-mono"
-                style={{
-                  background: isErr ? ERROR_BG : "transparent",
-                  color: FG_DARK
-                }}
-                value={row.fecha}
-                onChange={e => updateField(i, "fecha", e.target.value)}
-                placeholder="MM/AA"
-              />
-              <input
-                className="w-48 text-sm px-1 py-1 border rounded text-right focus:ring-2 focus:ring-accent outline-none font-mono"
-                style={{
-                  background: isErr ? ERROR_BG : "transparent",
-                  color: FG_DARK
-                }}
-                value={row.capital}
-                onChange={e => updateField(i, "capital", e.target.value)}
-                placeholder="1.500,50"
-              />
-              <div className="flex gap-1">
-                <button
-                  onClick={() => removeRow(i)}
-                  className="px-1.5 py-1 text-xs font-bold rounded bg-red-500 text-white hover:bg-red-600"
-                  disabled={rows.length === 1}
-                  title="Eliminar"
-                >
-                  {rows.length === 1 ? "~" : "−"}
-                </button>
-                <button
-                  onClick={() => addRow(i)}
-                  className="px-1.5 py-1 text-xs font-bold rounded bg-blue-600 text-white hover:bg-blue-700"
-                  title="Insertar debajo"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Total */}
-      <div className="px-4 pt-2 pb-4 text-right font-bold text-accent">
-        Total: {formatMoney(total)}
-      </div>
-
-      {/* Bottom bar */}
-      <div className="px-4 pb-6 flex justify-between items-center">
-        <div className="flex gap-2">
-          <button
+        <div className="flex gap-3">
+          <Button
             onClick={() => {
               setRows([{ id: "0", fecha: "", capital: "" }])
               setErrors(new Set())
             }}
-            className="px-4 py-1.5 text-sm font-medium rounded bg-red-500 text-white hover:bg-red-600"
+            variant="destructive"
           >
             Limpiar tabla
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => {
-              // TODO: Cargar desde PDF
               alert("Cargar desde PDF proximamente")
             }}
-            className="px-4 py-1.5 text-sm font-medium rounded bg-gray-500 text-white hover:bg-gray-600"
+            variant="outline"
           >
             Cargar desde PDF
-          </button>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => navigate("/")}
-            className="px-4 py-1.5 text-sm font-medium rounded bg-gray-500 text-white hover:bg-gray-600"
-          >
-            Volver
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleContinue}
-            className="px-4 py-1.5 text-sm font-medium rounded bg-accent text-white hover:bg-accent-dark"
-            disabled={saving}
+            variant="default"
           >
             Continuar →
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </Layout>
   )
 }

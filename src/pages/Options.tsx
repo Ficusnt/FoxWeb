@@ -1,14 +1,9 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { FileText, Percent, ArrowLeft, Play } from "lucide-react"
-
-const BG = "#f5f5f5"
-const ACCENT = "#1565c0"
-const ACCENT_DARK = "#0d47a1"
-const BTN_DANGER = "#c62828"
-const BTN_NEUTRAL = "#546e7a"
-const FG_LIGHT = "#ffffff"
-const FG_DARK = "#212121"
+import { FileText, Percent, ArrowLeft } from "lucide-react"
+import Layout from "../components/Layout"
+import Button from "../components/Button"
+import Card from "../components/Card"
 
 type TableFile = { folder: string; name: string; path: string }
 
@@ -23,7 +18,6 @@ export default function Options() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
 
-  // Load tables from API
   useEffect(() => {
     fetch("/api/tables")
       .then(r => r.json())
@@ -31,7 +25,6 @@ export default function Options() {
       .catch(() => {})
   }, [])
 
-  // Load saved input rows from localStorage
   const savedRows: Array<{ date: string; capital: number }> =
     JSON.parse(localStorage.getItem("fox_input_rows") || "[]")
   const hasRows = savedRows.length > 0
@@ -112,67 +105,68 @@ export default function Options() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: BG }}>
-      <div className="flex px-4 py-4">
-        <div className="px-4 py-1.5 font-bold text-gray-500" style={{ background: BTN_NEUTRAL, color: FG_LIGHT }}>
-          Datos
+    <Layout>
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Generar reporte</h1>
+            <p className="text-sm text-gray-500">Seleccione el modo de cálculo</p>
+          </div>
+          <Button onClick={() => navigate("/editor")} variant="outline" size="sm">
+            <ArrowLeft size={16} /> Volver
+          </Button>
         </div>
-        <div className="mx-2 mt-1">➔</div>
-        <div
-          className={`px-4 py-1.5 rounded font-bold text-white`}
-          style={{ background: ACCENT }}
-        >
-          Opciones
-        </div>
-        <div className="mx-2 mt-1">➔</div>
-        <div className="px-4 py-1.5 font-bold text-gray-500" style={{ background: BTN_NEUTRAL, color: FG_LIGHT }}>
-          PDF
-        </div>
-      </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="flex gap-4 mb-6">
-          <button
+        <div className="flex gap-3 mb-6">
+          <Button
             onClick={() => setMode("tabla")}
-            className={`px-4 py-2 rounded font-medium text-sm transition ${mode === "tabla" ? "bg-accent text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
+            variant={mode === "tabla" ? "default" : "outline"}
+            className="flex-1"
           >
+            <FileText size={18} className="mr-2" />
             Tablas (CSV)
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setMode("porcentaje")}
-            className={`px-4 py-2 rounded font-medium text-sm transition ${mode === "porcentaje" ? "bg-accent text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
+            variant={mode === "porcentaje" ? "default" : "outline"}
+            className="flex-1"
           >
+            <Percent size={18} className="mr-2" />
             Porcentaje
-          </button>
+          </Button>
         </div>
 
-        <div className="bg-white p-6 rounded shadow border border-gray-200">
+        <Card className="mb-6">
           {mode === "tabla" ? (
             <>
-              <h2 className="text-lg font-bold text-gray-800 mb-4">Seleccionar tabla (CSV)</h2>
-              {tables.length === 0 ? (
-                <p className="text-gray-500">
-                  No se encontraron archivos CSV. Ejecute el scraper primero.
-                </p>
-              ) : (
-                <div className="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded p-2 bg-gray-50">
-                  {tables.map(t => (
-                    <button
-                      key={t.path}
-                      onClick={() => setSelectedTable(t.path)}
-                      className={`w-full text-left px-3 py-2 rounded border text-left transition text-sm ${selectedTable === t.path ? "bg-blue-50 border-blue-300 text-blue-700 font-medium" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}`}
-                    >
-                      {t.path}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className="mt-6">
-                <label className="block text-sm font-bold text-gray-700 mb-1">
+              <div className="px-6 py-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Seleccionar tabla (CSV)</h3>
+                {tables.length === 0 ? (
+                  <div className="flex items-center justify-center py-8 text-gray-500">
+                    No se encontraron archivos CSV. Ejecute el scraper primero.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded bg-gray-50 p-2">
+                    {tables.map(t => (
+                      <button
+                        key={t.path}
+                        onClick={() => setSelectedTable(t.path)}
+                        className={`w-full text-left px-3 py-2 rounded border text-left transition text-sm ${
+                          selectedTable === t.path ? "bg-blue-50 border-blue-300 text-blue-700 font-medium" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        {t.path}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="px-6 py-4 border-t border-gray-100">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Multiplicador global:
                 </label>
                 <input
-                  className="w-24 text-sm px-1 py-1 border rounded focus:ring-2 focus:ring-accent outline-none"
+                  className="w-24 px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
                   value={multiplier}
                   onChange={e => setMultiplier(e.target.value)}
                   placeholder="1"
@@ -181,48 +175,47 @@ export default function Options() {
             </>
           ) : (
             <>
-              <h2 className="text-lg font-bold text-gray-800 mb-4">Calculo por porcentaje</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">
-                    Porcentaje base mensual (%):
-                  </label>
-                  <input
-                    className="w-24 text-sm px-1 py-1 border rounded focus:ring-2 focus:ring-accent outline-none"
-                    value={percent}
-                    onChange={e => setPercent(e.target.value)}
-                    placeholder="5"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">
-                    Desplazar mes:
-                  </label>
-                  <input
-                    className="w-24 text-sm px-1 py-1 border rounded focus:ring-2 focus:ring-accent outline-none"
-                    value={shift}
-                    onChange={e => setShift(e.target.value)}
-                    placeholder="0"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    0 = mes actual, +2 = dos meses adelante, -1 = mes anterior
-                  </p>
+              <div className="px-6 py-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Cálculo por porcentaje</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Porcentaje base mensual (%):
+                    </label>
+                    <input
+                      className="w-24 px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                      value={percent}
+                      onChange={e => setPercent(e.target.value)}
+                      placeholder="5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Desplazar mes:
+                    </label>
+                    <input
+                      className="w-24 px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                      value={shift}
+                      onChange={e => setShift(e.target.value)}
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      0 = mes actual, +2 = dos meses adelante, -1 = mes anterior
+                    </p>
+                  </div>
                 </div>
               </div>
             </>
           )}
-        </div>
+        </Card>
 
-        <div className="mt-6 flex justify-between">
-          <button
-            onClick={() => navigate("/editor")}
-            className="px-4 py-1.5 text-sm font-medium rounded bg-gray-500 text-white hover:bg-gray-600"
-          >
+        <div className="flex justify-end gap-3">
+          <Button onClick={() => navigate("/editor")} variant="outline">
             Volver
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleGenerate}
-            className="px-4 py-1.5 text-sm font-medium rounded bg-accent text-white hover:bg-accent-dark"
+            variant="default"
             disabled={
               loading ||
               !hasRows ||
@@ -230,21 +223,30 @@ export default function Options() {
             }
           >
             {loading ? "Generando..." : "Generar PDF"}
-          </button>
+          </Button>
         </div>
 
         {message && (
           <div
-            className={`mt-4 p-3 rounded text-sm border ${
+            className={`mt-4 p-4 rounded-lg text-sm flex items-center gap-3 ${
               message.startsWith("Error")
-                ? "bg-red-50 text-red-700 border-red-200"
-                : "bg-green-50 text-green-700 border-green-200"
+                ? "bg-red-50 border border-red-200 text-red-700"
+                : "bg-green-50 border border-green-200 text-green-700"
             }`}
           >
+            {message.startsWith("Error") ? (
+              <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            )}
             {message}
           </div>
         )}
       </div>
-    </div>
+    </Layout>
   )
 }

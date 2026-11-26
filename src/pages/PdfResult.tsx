@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Download, ArrowLeft, FileText, CheckCircle } from "lucide-react"
-
-const ACCENT = "#1565c0"
-const ACCENT_DARK = "#0d47a1"
+import { CheckCircle, ArrowRight } from "lucide.react"
+import Layout from "../components/Layout"
+import Button from "../components/Button"
 
 export default function PdfResult() {
   const navigate = useNavigate()
@@ -24,37 +23,37 @@ export default function PdfResult() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#f5f5f5" }}>
-      <div className="bg-white p-8 rounded shadow-xl border border-gray-200 max-w-md w-full text-center">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <CheckCircle size={32} className="text-green-600" />
-        </div>
-        <h1 className="text-xl font-bold text-gray-800 mb-2">PDF generado</h1>
-        <p className="text-gray-600 mb-6">
-          Su reporte esta listo para descargar.
-        </p>
-        <button
-          onClick={handleDownload}
-          className={`w-full px-4 py-2 rounded font-medium text-white transition ${downloaded ? "bg-gray-400" : `bg-${ACCENT} hover:bg-${ACCENT_DARK}`}`}
-          disabled={downloaded}
-        >
-          {downloaded ? "Descargado" : "Descargar PDF"}
-        </button>
-        <div className="mt-6">
-          <button
-            onClick={() => navigate("/editor")}
-            className="px-4 py-1.5 text-sm font-medium rounded bg-gray-500 text-white hover:bg-gray-600"
+    <Layout>
+      <div className="max-w-md mx-auto py-12">
+        <div className="flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center mb-6">
+            <CheckCircle size={32} className="text-green-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">Reporte listo</h1>
+          <p className="text-gray-600 mb-8">
+            Su PDF ha sido generado correctamente y está listo para descargar.
+          </p>
+
+          <Button
+            onClick={handleDownload}
+            variant="default"
+            disabled={downloaded}
+            className="w-full flex items-center justify-center gap-2 mb-6"
           >
-            Nuevo reporte
-          </button>
-          <button
-            onClick={() => navigate("/")}
-            className="ml-2 px-4 py-1.5 text-sm font-medium rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
-          >
-            Inicio
-          </button>
+            {downloaded ? "Descargado" : "Descargar PDF"}
+            {!downloaded && <ArrowRight size={16} />}
+          </Button>
+
+          <div className="flex gap-3">
+            <Button onClick={() => navigate("/editor")} variant="outline">
+              Nuevo reporte
+            </Button>
+            <Button onClick={() => navigate("/")} variant="ghost">
+              Inicio
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </Layout>
   )
 }

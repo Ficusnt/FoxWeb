@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Home from "./pages/Home"
 import DataEditor from "./pages/DataEditor"
 import ScraperConfig from "./pages/ScraperConfig"
-import Options from "./pages/Options"
+import Wizard from "./pages/Wizard"
 import PdfResult from "./pages/PdfResult"
 
 export default function App() {
@@ -12,7 +12,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/editor" element={<DataEditor />} />
         <Route path="/scraper" element={<ScraperConfig />} />
-        <Route path="/opciones" element={<Options />} />
+        <Route path="/wizard" element={<Wizard />} />
         <Route path="/pdf" element={<PdfResult />} />
       </Routes>
     </BrowserRouter>

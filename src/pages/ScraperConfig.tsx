@@ -1,17 +1,8 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Save, Play, ArrowLeft, Plus, Minus, List } from "lucide-react"
-
-const BG = "#f5f5f5"
-const ACCENT = "#1565c0"
-const ACCENT_DARK = "#0d47a1"
-const BTN_DANGER = "#c62828"
-const BTN_NEUTRAL = "#546e7a"
-const FG_LIGHT = "#ffffff"
-const FG_DARK = "#212121"
-const ROW_ALT = "#e8eaf6"
-const BORDER = "#bdbdbd"
-const ERROR_BG = "#ffebee"
+import Layout from "../components/Layout"
+import Button from "../components/Button"
+import Card from "../components/Card"
 
 type TableEntry = {
   id: string
@@ -26,7 +17,6 @@ export default function ScraperConfig() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
 
-  // Load config from API
   useEffect(() => {
     fetch("/api/scraper/config")
       .then(r => r.json())
@@ -37,14 +27,12 @@ export default function ScraperConfig() {
           name: t.name,
           url: t.url
         }))
-        // Always ensure an empty row at the bottom
         if (ents.length === 0 || ents[ents.length - 1].name !== "") {
           ents.push({ id: crypto.randomUUID(), name: "", url: "" })
         }
         setEntries(ents)
       })
       .catch(() => {
-        // Start with one empty row
         setEntries([{ id: crypto.randomUUID(), name: "", url: "" }])
       })
   }, [])
@@ -65,7 +53,6 @@ export default function ScraperConfig() {
     const newRow: TableEntry = { id: crypto.randomUUID(), name: "", url: "" }
     setEntries(prev => {
       const next = [...prev]
-      // Don't add if last row already empty
       if (next.length > 0 && !next[next.length - 1].name && !next[next.length - 1].url) {
         return next
       }
@@ -82,7 +69,6 @@ export default function ScraperConfig() {
         return [{ ...prev[0], name: "", url: "" }]
       }
       const next = prev.filter((_, i) => i !== index)
-      // Always keep an empty row at bottom
       if (next.length === 0 || (next[next.length - 1].name || next[next.length - 1].url)) {
         next.push({ id: crypto.randomUUID(), name: "", url: "" })
       }
@@ -97,15 +83,8 @@ export default function ScraperConfig() {
       next[index] = { ...next[index], [field]: value }
       return next
     })
-    // Debounced persist
     clearTimeout((window as any)._persistTimer)
     ;(window as any)._persistTimer = setTimeout(() => persist(), 300)
-  }
-
-  const handleSave = () => {
-    persist()
-    setMessage("Configuracion guardada")
-    setTimeout(() => setMessage(""), 2000)
   }
 
   const handleRunScraper = async () => {
@@ -118,7 +97,6 @@ export default function ScraperConfig() {
         setMessage("Tablas actualizadas correctamente")
       } else {
         setMessage(`Error: ${data.message}`)
-        data.results?.forEach((r: any) => console.log(r.name, r.status))
       }
     } catch (err: any) {
       setMessage(`Error: ${err.message}`)
@@ -129,130 +107,122 @@ export default function ScraperConfig() {
   const hasValidEntries = entries.some(e => e.name.trim() && e.url.trim())
 
   return (
-    <div className="min-h-screen" style={{ background: BG }}>
-      {/* Workflow ribbon */}
-      <div className="flex px-4 py-4">
-        <div className="px-4 py-1.5 font-bold text-gray-500" style={{ background: BTN_NEUTRAL, color: FG_LIGHT }}>
-          Datos
-        </div>
-        <div className="mx-2 mt-1">➔</div>
-        <div className="px-4 py-1.5 font-bold text-gray-500" style={{ background: BTN_NEUTRAL, color: FG_LIGHT }}>
-          Opciones
-        </div>
-        <div className="mx-2 mt-1">➔</div>
-        <div
-          className={`px-4 py-1.5 rounded font-bold text-white`}
-          style={{ background: ACCENT }}
-        >
-          Scraper
-        </div>
-      </div>
-
-      <h1 className="text-xl font-bold text-gray-800 px-4 pt-4">Configuracion del scraper</h1>
-      <p className="text-sm text-gray-500 px-4">Editar TABLAS/config.txt</p>
-
-      {/* Tables list */}
-      <div className="px-4">
-        <h2 className="text-sm font-bold text-gray-700 mb-2">Tablas configuradas</h2>
-        <div className="flex" style={{ background: ACCENT }}>
-          <div className="flex-1 px-2 py-2 text-xs font-bold text-white" style={{ color: FG_LIGHT }}>Nombre</div>
-          <div className="w-80 px-2 py-2 text-xs font-bold text-white" style={{ color: FG_LIGHT }}>URL</div>
-          <div className="w-16 px-2 py-2 text-xs font-bold text-white" style={{ color: FG_LIGHT }}></div>
+    <Layout>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Configuración del scraper</h1>
+            <p className="text-sm text-gray-500">Editar TABLAS/config.txt</p>
+          </div>
+          <Button onClick={() => navigate("/")} variant="outline" size="sm">
+            <ArrowLeft size={16} /> Volver
+          </Button>
         </div>
 
-        <div className="max-h-[40vh] overflow-y-auto border border-gray-300" style={{ background: "#ffffff" }}>
-          {entries.map((entry, i) => {
-            const isErr = !entry.name || !entry.url || !entry.url.toLowerCase().startsWith("http")
-            return (
-              <div
-                key={entry.id}
-                className="flex items-center gap-2 px-2 py-1 border-b border-gray-200"
-                style={{
-                  background: i % 2 === 1 ? ROW_ALT : "#ffffff"
-                }}
-              >
-                <input
-                  className="flex-1 text-sm px-1 py-1 border rounded focus:ring-2 focus:ring-accent outline-none"
-                  style={{
-                    background: isErr ? ERROR_BG : "transparent",
-                    color: FG_DARK
-                  }}
-                  value={entry.name}
-                  onChange={e => updateField(i, "name", e.target.value)}
-                  placeholder="BCRA_ACT_SUM"
-                />
-                <input
-                  className="w-80 text-sm px-1 py-1 border rounded focus:ring-2 focus:ring-accent outline-none"
-                  style={{
-                    background: isErr ? ERROR_BG : "transparent",
-                    color: FG_DARK
-                  }}
-                  value={entry.url}
-                  onChange={e => updateField(i, "url", e.target.value)}
-                  placeholder="https://www.agendae.com.ar/listado1.aspx?t=42"
-                />
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => removeRow(i)}
-                    className="px-1.5 py-1 text-xs font-bold rounded bg-red-500 text-white hover:bg-red-600"
-                    title="Eliminar"
-                  >
-                    −
-                  </button>
-                  <button
-                    onClick={() => addRow(i)}
-                    className="px-1.5 py-1 text-xs font-bold rounded bg-blue-600 text-white hover:bg-blue-700"
-                    title="Insertar debajo"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            )
-          })}
-        </div>
+        <Card className="mb-6">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500">Nombre</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 w-3/4">URL</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 text-right"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map((entry, i) => {
+                  const isErr =
+                    !entry.name || !entry.url || !entry.url.toLowerCase().startsWith("http")
+                  return (
+                    <tr
+                      key={entry.id}
+                      className={`border-b border-gray-100 transition-colors ${
+                        i % 2 === 1 ? "bg-gray-50" : ""
+                      } ${isErr ? "bg-red-50" : ""}`}
+                    >
+                      <td className="px-4 py-3">
+                        <input
+                          className={`w-full px-3 py-2 text-sm rounded border focus:ring-2 focus:ring-accent outline-none ${
+                            isErr ? "border-red-500 ring-2 ring-red-500/20" : "border-gray-300"
+                          }`}
+                          value={entry.name}
+                          onChange={e => updateField(i, "name", e.target.value)}
+                          placeholder="BCRA_ACT_SUM"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          className={`w-full px-3 py-2 text-sm rounded border focus:ring-2 focus:ring-accent outline-none ${
+                            isErr ? "border-red-500 ring-2 ring-red-500/20" : "border-gray-300"
+                          }`}
+                          value={entry.url}
+                          onChange={e => updateField(i, "url", e.target.value)}
+                          placeholder="https://www.agendae.com.ar/listado1.aspx?t=42"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => removeRow(i)}
+                            className="p-2 rounded hover:bg-gray-100 text-gray-500 hover:text-red-500"
+                            title="Eliminar"
+                          >
+                            −
+                          </button>
+                          <button
+                            onClick={() => addRow(i)}
+                            className="p-2 rounded hover:bg-accent/50 text-accent hover:bg-accent/100"
+                            title="Insertar debajo"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4 flex items-end justify-between">
+            <Button onClick={() => persist()} variant="outline" size="sm">
+              Guardar en config.txt
+            </Button>
+            {message && (
+              <span className="text-sm text-green-600">{message}</span>
+            )}
+          </div>
+        </Card>
 
-        <div className="pt-2">
-          <button
-            onClick={handleSave}
-            className="px-4 py-1.5 text-sm font-medium rounded bg-gray-500 text-white hover:bg-gray-600"
+        <Card className="mb-6">
+          <div className="px-6 py-4">
+            <div className="flex items-center gap-3 mb-3">
+              <h3 className="text-lg font-semibold text-gray-900">Retención de snapshots (meses)</h3>
+            </div>
+            <div className="flex items-center gap-4">
+              <input
+                className="w-24 px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                value={retencion}
+                onChange={e => setRetencion(e.target.value)}
+                onBlur={persist}
+              />
+              <p className="text-xs text-gray-500">
+                Cuántos snapshots (meses previos) conservar por tabla. El archivo actual suma aparte.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <div className="flex justify-end">
+          <Button
+            onClick={handleRunScraper}
+            variant="default"
+            disabled={loading || !hasValidEntries}
           >
-            Guardar en config.txt
-          </button>
-          {message && <span className="ml-2 text-sm text-green-700">{message}</span>}
+            {loading ? "Ejecutando..." : "Ejecutar scraper ahora"}
+          </Button>
         </div>
       </div>
-
-      {/* Retention (at bottom) */}
-      <div className="px-4 mt-4 pb-4 border-t border-gray-300" style={{ background: "#ffffff" }}>
-        <h2 className="text-sm font-bold text-gray-700 mb-2">Retencion de snapshots (meses)</h2>
-        <input
-          className="w-24 text-sm px-1 py-1 border rounded focus:ring-2 focus:ring-accent outline-none"
-          value={retencion}
-          onChange={e => setRetencion(e.target.value)}
-          onBlur={persist}
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Cuantos snapshots (meses previos) conservar por tabla. El archivo actual suma aparte.
-        </p>
-      </div>
-
-      {/* Bottom bar */}
-      <div className="px-4 pb-6 flex justify-between items-center">
-        <button
-          onClick={() => navigate("/")}
-          className="px-4 py-1.5 text-sm font-medium rounded bg-gray-500 text-white hover:bg-gray-600"
-        >
-          Volver
-        </button>
-        <button
-          onClick={handleRunScraper}
-          className="px-4 py-1.5 text-sm font-medium rounded bg-accent text-white hover:bg-accent-dark"
-          disabled={loading || !hasValidEntries}
-        >
-          {loading ? "Ejecutando..." : "Ejecutar scraper ahora"}
-        </button>
-      </div>
-    </div>
+    </Layout>
   )
 }
