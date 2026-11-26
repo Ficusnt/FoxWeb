@@ -9,16 +9,16 @@ workers_dev = true
 #   pnpm dlx wrangler kv namespace create FOX_SESSIONS
 #
 [[kv_namespaces]]
+binding = "FOX_SESSIONS"
+id = "aad22b247c7246c8b0e3049a476040d1"
+
+[[kv_namespaces]]
 binding = "TABLE_CONFIG"
 id = "a60c56bb22c244f2b2469619d8166260"
 
 [[kv_namespaces]]
 binding = "TABLE_CSVS"
 id = "aeb673b796ce4389a0675a3df73c297c"
-
-[[kv_namespaces]]
-binding = "FOX_SESSIONS"
-id = "aad22b247c7246c8b0e3049a476040d1"
 
 # D1 database — create this first, then uncomment and fill in the real ID:
 #   pnpm dlx wrangler d1 create fox-db
@@ -29,8 +29,16 @@ binding = "FOX_DB"
 database_name = "fox-db"
 database_id = "da2450ff-361d-4ca3-9d4f-750106df1f62"
 
-[observability]
+[observability.logs]
 enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = false
+head_sampling_rate = 1
+persist = true
 
 [vars]
 ENVIRONMENT = "development"
