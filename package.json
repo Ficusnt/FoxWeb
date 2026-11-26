@@ -7,7 +7,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
-    "build": "pnpm run build"
+    "build": "pnpm --dir apps/web run build"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240405.0",
