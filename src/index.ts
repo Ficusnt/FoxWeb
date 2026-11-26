@@ -1,42 +1,22 @@
-import { Hono } from "hono";
-import { cors } from "hono/cors";
+/**
+ * src/index.ts — Cloudflare Workers entry point.
+ *
+ * Serves health check and routes API requests. The frontend static assets
+ * are served by Cloudflare Pages directly from the build output.
+ */
 
-import { authMiddleware } from "./middleware/auth";
-import authRoutes from "./routes/auth";
-import tableRoutes from "./routes/tables";
-import pdfRoutes from "./routes/pdf";
-import type { Env } from "./types/index";
+import { handleHealth } from "./lib/health"
 
-const app = new Hono<{ Bindings: Env }>();
+export default {
+  async fetch(request: Request, env: any, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url)
 
-app.use("*", cors({ origin: "https://fox-web.ficus.workers.dev", credentials: true }));
+    // Health check
+    if (url.pathname === "/api/health") {
+      return handleHealth(env)
+    }
 
-app.route("/api/auth", authRoutes);
-app.route("/api/tables", tableRoutes);
-app.route("/api/pdf", pdfRoutes);
-
-app.get("/api/health", (c) => c.json({ ok: true }));
-
-app.get("/api/auth/me", authMiddleware, (c) => {
-  return c.json({ authenticated: true });
-});
-
-// SPA fallback — serve dist/index.html for any non-API route so client-side
-// routing (React Router) works on refresh and direct links.
-// Using __STATIC_CONTENT (wrangler assets binding) ensures the served HTML
-// always references the correct Vite asset hashes from the latest build.
-// /assets/* files are served directly by wrangler's static assets handler.
-app.get("*", async (c) => {
-  const { pathname } = new URL(c.req.url);
-  if (pathname.startsWith("/api/")) return c.json({ error: "Not found" }, 404);
-
-  const indexHtml = await c.env.__STATIC_CONTENT.get("index.html", { type: "text" });
-  if (indexHtml) {
-    return new Response(indexHtml, { headers: { "Content-Type": "text/html" } });
+    // 404 for anything else hitting the Workers entry directly
+    return new Response("Not found", { status: 404 })
   }
-
-  return c.html("<h1>FoxWeb</h1><p>App not built yet.</p>");
-});
-
-export default app;
-export { scheduled } from "./scheduled";
+}

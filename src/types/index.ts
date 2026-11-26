@@ -1,54 +1,35 @@
-export type TableConfig = {
-  id: string;
-  name: string;
-  url: string;
-  folder: string;
-};
+export type TableEntry = {
+  name: string
+  url: string
+}
 
-export type CoefficientRow = {
-  fecha: string;   // MM/YY format
-  capital: number; // numeric value
-};
+export type ScraperConfig = {
+  retencion: number
+  tables: TableEntry[]
+}
 
-export type CoefficientTable = {
-  id: string;
-  name: string;
-  headings: string[];
-  data: CoefficientRow[];
-  updatedAt: string; // ISO timestamp
-};
+export type CoefficientMatrix = Record<string, Record<number, number>>
 
-export type PDFParams = {
-  tableId: string;
-  tableName: string;
-  admin: string;
-  edificio: string;
-  unidad: string;
-  mode: "tabla" | "porcentaje";
-  rows: CoefficientRow[];
-};
+export type InputRow = {
+  date: string   // MM/YY
+  capital: number
+}
 
-export type CalculationResult = {
-  globalMult: number;
-  rows: CoefficientRow[];
-  totalCapital: number;
-};
+export type CalcRow = {
+  date: string
+  capital: string        // formatted money
+  coeficiente: string    // "1,234"
+  coef_con_mult: string  // "1,234"
+  interes: string        // formatted money
+  final: string          // formatted money
+}
 
-export type SessionData = {
-  authenticated: boolean;
-  loggedInAt: string;
-};
-
-export type Env = {
-  TABLES_KV: KVNamespace;
-  __STATIC_CONTENT: KVNamespace;
-  AGENDAE_USUARIO?: string;
-  AGENDAE_PASSWORD?: string;
-  SESSION_SECRET?: string;
-  ENVIRONMENT?: string;
-};
-
-export type RefreshResult = {
-  updated: number;
-  errors: { tableId: string; error: string };
-};
+export type PdfReport = {
+  title: string
+  meta: string[]
+  headers: string[]
+  rows: CalcRow[]
+  totals: string[] | null
+  align: ("l" | "r" | "c")[]
+  errors: Record<number, string>
+}

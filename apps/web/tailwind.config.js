@@ -7,14 +7,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        fox: {
-          blue: "#1565c0",
-          dark: "#0d47a1",
-          light: "#e3f2fd",
-          gray: "#f5f5f5",
-        },
+        accent: "#1565c0",
+        accentDark: "#0d47a1",
+        bg: "#f5f5f5",
+        bgTable: "#ffffff",
+        rowAlt: "#e8eaf6",
+        border: "#bdbdbd",
+        errorBg: "#ffebee",
+        errorFg: "#b71c1c"
       },
+      fontFamily: {
+        sans: ["Segoe UI", "system-ui", "sans-serif"],
+        mono: ["Courier New", "monospace"]
+      }
     },
   },
   plugins: [],
-};
+}
