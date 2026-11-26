@@ -28,20 +28,20 @@ export default function Card({
 }
 
 interface CardHeaderProps {
-  title: string
+  title?: string
   description?: string
   icon?: ReactNode
+  children?: ReactNode
 }
 
-export function CardHeader({ title, description, icon }: CardHeaderProps) {
+export function CardHeader({ title, description, icon, children }: CardHeaderProps) {
   return (
     <div className="flex items-center gap-4 p-6 border-b border-gray-100">
       {icon && <div className="p-2 rounded-lg bg-gray-100 text-gray-600">{icon}</div>}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        {description && (
-          <p className="text-sm text-gray-500">{description}</p>
-        )}
+        {title && <h3 className="text-lg font-semibold text-gray-900">{title}</h3>}
+        {description && <p className="text-sm text-gray-500">{description}</p>}
+        {children && children}
       </div>
     </div>
   )
@@ -54,3 +54,6 @@ export function CardFooter({ children }: { children: ReactNode }) {
     </div>
   )
 }
+
+Card.Header = CardHeader
+Card.Footer = CardFooter
