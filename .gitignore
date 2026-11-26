@@ -3,6 +3,8 @@ dist/
 build/
 .dist/
 .turbo/
+.codegraph/
+.claude/
 *.log
 npm-debug.log*
 .yarn-integrity
