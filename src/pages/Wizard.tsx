@@ -196,8 +196,8 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
                   {stepLabels[n - 1]}
                 </span>
                 {!isLast && (
-                  <div className="step-line-spacer">
-                    <div className={`step-line ${completed ? "completed" : ""}`} />
+                  <div className="step-line">
+                    <div className={`step-line-fill ${completed ? "completed" : ""}`} />
                   </div>
                 )}
               </div>
