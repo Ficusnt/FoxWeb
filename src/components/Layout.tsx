@@ -1,30 +1,8 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import {
-  LayoutDashboard,
-  FileText,
-  Settings,
-  Play,
-  Home,
-  Menu,
-  X,
-} from "lucide-react"
-
-const NAV_ITEMS = [
-  { name: "Inicio", href: "/", icon: Home },
-  { name: "Datos", href: "/editor", icon: LayoutDashboard },
-  { name: "Scraper", href: "/scraper", icon: Settings },
-  { name: "Reportes", href: "/wizard", icon: FileText },
-]
+import { Menu, X } from "lucide-react"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const navigate = useNavigate()
-
-  const isActive = (path: string) => {
-    const { pathname } = window.location
-    return pathname === path || (path !== "/" && pathname.startsWith(path))
-  }
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -41,36 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="hidden md:flex items-center gap-8">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon
-            const active = isActive(item.href)
-            return (
-              <button
-                key={item.name}
-                onClick={() => {
-                  navigate(item.href)
-                  setSidebarOpen(false)
-                }}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                }`}
-              >
-                <Icon size={18} />
-                {item.name}
-              </button>
-            )
-          })}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden p-2 text-gray-500 hover:text-gray-700"
-          >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+          {/* Top navigation is intentionally empty — the Wizard is the landing page */}
         </div>
       </nav>
 
@@ -95,40 +44,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </button>
           </div>
           <nav className="p-4 space-y-1">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon
-              const active = isActive(item.href)
-              return (
-                <button
-                  key={item.name}
-                  onClick={() => {
-                    navigate(item.href)
-                    setSidebarOpen(false)
-                  }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    active
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  }`}
-                >
-                  <Icon size={20} />
-                  {item.name}
-                </button>
-              )
-            })}
+            {/* Mobile nav is intentionally empty — the Wizard is the landing page */}
           </nav>
-          <div className="mt-auto p-4 border-t border-gray-200">
-            <button
-              onClick={() => {
-                navigate("/")
-                setSidebarOpen(false)
-              }}
-              className="w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              <Home size={20} className="mr-3" />
-              Volver al inicio
-            </button>
-          </div>
         </aside>
       )}
 
