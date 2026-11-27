@@ -5,6 +5,7 @@ build/
 .turbo/
 .codegraph/
 .claude/
+analysis/
 *.log
 npm-debug.log*
 .yarn-integrity
