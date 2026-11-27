@@ -9,10 +9,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Wizard />} />
         <Route path="/editor" element={<DataEditor />} />
         <Route path="/scraper" element={<ScraperConfig />} />
-        <Route path="/wizard" element={<Wizard />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/pdf" element={<PdfResult />} />
       </Routes>
     </BrowserRouter>
