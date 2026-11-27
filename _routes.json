@@ -1,6 +1,3 @@
 {
-  "version": 1,
-  "routes": [
-    { "pattern": "/api/*", "function": "functions/api" }
-  ]
+  "version": 1
 }

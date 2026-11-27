@@ -17,6 +17,7 @@ export default function Wizard() {
   // Step 2 - manual input
   const [rows, setRows] = useState<InputRow[]>([{ fecha: "", capital: "" }])
   const [pdfLoadedName, setPdfLoadedName] = useState<string | null>(null)
+const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
 
   // Step 3 - tabla mode
   const [tables, setTables] = useState<TableFile[]>([])
@@ -69,6 +70,31 @@ export default function Wizard() {
     const next = [...rows]
     next[idx] = { ...next[idx], [field]: value }
     setRows(next)
+
+    // Auto-format fecha: 1221 -> 12/21, validate month <= 12
+    if (field === "fecha") {
+      const digits = value.replace(/\D/g, "")
+      let formatted = ""
+      if (digits.length >= 1) formatted += digits.slice(0, 2)
+      if (digits.length >= 3) formatted += "/" + digits.slice(2, 4)
+      if (formatted !== value) {
+        next[idx] = { ...next[idx], fecha: formatted }
+        setRows(next)
+      }
+
+      const nextErrors = new Set(fechaErrors)
+      if (digits.length === 4) {
+        const mm = parseInt(digits.slice(0, 2), 10)
+        if (mm < 1 || mm > 12) {
+          nextErrors.add(idx)
+        } else {
+          nextErrors.delete(idx)
+        }
+      } else {
+        nextErrors.delete(idx)
+      }
+      setFechaErrors(nextErrors)
+    }
   }
 
   const handleGenerate = async () => {
@@ -129,6 +155,15 @@ export default function Wizard() {
     setLoading(false)
   }
 
+  const goHome = () => {
+    setStep(1)
+    setMode(null)
+    setRows([{ fecha: "", capital: "" }])
+    setFechaErrors(new Set())
+    setMessage("")
+    setPdfUrl(null)
+  }
+
   const suggestedName = `${admin.trim()}${calleAltura.trim() ? "_" : ""}${calleAltura.trim()}${unidad.trim() ? "_" : ""}${unidad.trim()}`.replace(/_+/g, "_").replace(/_$/, "")
 
   const stepLabel = step === 1 ? "Seleccionar modo" : step === 2 ? "Ingresar datos" : step === 3 ? "Configurar cálculo" : step === 4 ? "Nombrar y generar" : ""
@@ -141,13 +176,13 @@ export default function Wizard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-display mb-1">FOX</h1>
-          <p className="text-sm text-gray-500">Actualizador de valores de expensas — coeficientes de agendae.com.ar</p>
+          <p className="text-sm text-gray-700">Actualizador de valores de expensas — coeficientes de agendae.com.ar</p>
         </div>
 
         {/* Step indicator */}
         <div className="step-indicator mb-8">
           {[1, 2, 3, 4].map((n) => {
-            const active = step >= n
+            const active = step === n
             const completed = step > n
             return (
               <div key={n} className="step">
@@ -157,7 +192,9 @@ export default function Wizard() {
                   {n}
                 </div>
                 {n < 4 && <div className={`step-line ${completed ? "completed" : ""}`} />}
-                <span className="step-label">{stepLabels[n - 1]}</span>
+                <span className={`step-label ${active ? "text-fox-ink font-semibold" : "text-gray-500"}`}>
+                  {stepLabels[n - 1]}
+                </span>
               </div>
             )
           })}
@@ -167,7 +204,7 @@ export default function Wizard() {
         {step === 1 && (
           <div className="fox-card">
             <h2 className="fox-card-title">Seleccionar modo de cálculo</h2>
-            <p className="fox-card-desc">Elija cómo desea calcular los valores:</p>
+            <p className="fox-card-desc text-gray-700">Elija cómo desea calcular los valores:</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button
                 onClick={() => { setMode("tabla"); setStep(2) }}
@@ -202,7 +239,7 @@ export default function Wizard() {
           <>
             <div className="fox-card mb-6">
               <h2 className="fox-card-title">Ingresar datos a calcular</h2>
-              <p className="fox-card-desc">Fecha: MM/AA  Capital: número (ej. 15000 o 1.500,50)</p>
+              <p className="fox-card-desc text-gray-700">Fecha: MM/AA  Capital: número (ej. 15000 o 1.500,50)</p>
               <div className="overflow-x-auto">
                 <table className="ledger-table">
                   <thead>
@@ -219,7 +256,9 @@ export default function Wizard() {
                         <td className="px-4 py-3 text-xs text-gray-400 font-mono">{i + 1}</td>
                         <td className="px-4 py-3">
                           <input
-                            className="fox-input text-right font-mono"
+                            className={`fox-input text-right font-mono ${
+                              fechaErrors.has(i) ? "border-fox-red ring-2 ring-fox-red/20" : "border-fox-rule"
+                            }`}
                             value={row.fecha}
                             onChange={(e) => updateField(i, "fecha", e.target.value)}
                             placeholder="MM/AA"
@@ -286,7 +325,7 @@ export default function Wizard() {
             </div>
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => navigate("/")}
+                onClick={goHome}
                 className="btn btn-ghost"
               >
                 Volver al inicio
@@ -308,7 +347,7 @@ export default function Wizard() {
             <h2 className="fox-card-title">
               {mode === "tabla" ? "Seleccionar tabla (CSV)" : "Configurar porcentaje"}
             </h2>
-            <p className="fox-card-desc">
+            <p className="fox-card-desc text-gray-700">
               {mode === "tabla" ? "Elija el coeficiente de tabla a aplicar" : "Porcentaje base mensual y desplazamiento"}
             </p>
             <div className="p-6">
@@ -396,7 +435,7 @@ export default function Wizard() {
         {step === 4 && (
           <div className="fox-card mb-6">
             <h2 className="fox-card-title">Nombrar y generar reporte</h2>
-            <p className="fox-card-desc">Complete los campos para nombrar el archivo PDF</p>
+            <p className="fox-card-desc text-gray-700">Complete los campos para nombrar el archivo PDF</p>
             <div className="p-6 space-y-4">
               <div>
                 <label className="fox-label">Administración</label>
