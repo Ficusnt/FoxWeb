@@ -212,7 +212,7 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
               >
                 <FileText size={28} className="mb-2" />
                 <span className="font-medium">TABLA</span>
-                <span className="text-xs text-gray-500">Usar coeficiente de tabla</span>
+                <span className={`text-xs ${mode === "tabla" ? "text-gray-200" : "text-gray-500"}`}>Usar coeficiente de tabla</span>
               </button>
               <button
                 onClick={() => { setMode("porcentaje"); setStep(2) }}
@@ -220,7 +220,7 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
               >
                 <Percent size={28} className="mb-2" />
                 <span className="font-medium">PORCENTAJE</span>
-                <span className="text-xs text-gray-500">Cálculo por % mensual</span>
+                <span className={`text-xs ${mode === "porcentaje" ? "text-gray-200" : "text-gray-500"}`}>Cálculo por % mensual</span>
               </button>
               <button
                 onClick={() => navigate("/scraper")}
