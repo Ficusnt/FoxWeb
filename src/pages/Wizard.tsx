@@ -181,17 +181,20 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
 
         {/* Step indicator */}
         <div className="step-indicator mb-8">
-          {[1, 2, 3, 4].map((n) => {
+          {[1, 2, 3, 4].map((n, i) => {
             const active = step === n
             const completed = step > n
+            const isLast = i === 3
             return (
-              <div key={n} className="step">
-                <div
-                  className={`step-circle ${completed ? "completed" : active ? "active" : ""}`}
-                >
-                  {n}
+              <div key={n} className="step-group">
+                <div className="step-top">
+                  <div
+                    className={`step-circle ${completed ? "completed" : active ? "active" : ""}`}
+                  >
+                    {n}
+                  </div>
+                  {!isLast && <div className={`step-line ${completed ? "completed" : ""}`} />}
                 </div>
-                {n < 4 && <div className={`step-line ${completed ? "completed" : ""}`} />}
                 <span className={`step-label ${active ? "text-fox-ink font-semibold" : "text-gray-500"}`}>
                   {stepLabels[n - 1]}
                 </span>
@@ -212,7 +215,7 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
               >
                 <FileText size={28} className="mb-2" />
                 <span className="font-medium">TABLA</span>
-                <span className="text-xs text-gray-200">Usar coeficiente de tabla</span>
+                <span className="text-xs text-gray-300">Usar coeficiente de tabla</span>
               </button>
               <button
                 onClick={() => { setMode("porcentaje"); setStep(2) }}
@@ -220,7 +223,7 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
               >
                 <Percent size={28} className="mb-2" />
                 <span className="font-medium">PORCENTAJE</span>
-                <span className="text-xs text-gray-200">Cálculo por % mensual</span>
+                <span className="text-xs text-gray-300">Cálculo por % mensual</span>
               </button>
               <button
                 onClick={() => navigate("/scraper")}
