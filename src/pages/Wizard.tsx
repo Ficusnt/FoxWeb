@@ -187,17 +187,19 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
             const isLast = i === 3
             return (
               <div key={n} className="step-group">
-                <div className="step-top">
-                  <div
-                    className={`step-circle ${completed ? "completed" : active ? "active" : ""}`}
-                  >
-                    {n}
-                  </div>
-                  {!isLast && <div className={`step-line ${completed ? "completed" : ""}`} />}
+                <div
+                  className={`step-circle ${completed ? "completed" : active ? "active" : ""}`}
+                >
+                  {n}
                 </div>
                 <span className={`step-label ${active ? "text-fox-ink font-semibold" : "text-gray-500"}`}>
                   {stepLabels[n - 1]}
                 </span>
+                {!isLast && (
+                  <div className="step-line-spacer">
+                    <div className={`step-line ${completed ? "completed" : ""}`} />
+                  </div>
+                )}
               </div>
             )
           })}

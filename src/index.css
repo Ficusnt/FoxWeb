@@ -280,20 +280,14 @@ p { margin: 0 0 0.75rem 0; font-size: 0.95rem; }
 /* ── Wizard steps ── */
 .step-indicator {
   display: flex;
-  align-items: flex-start;
-  gap: 0;
+  align-items: center;
+  gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
 .step-group {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.step-top {
-  display: flex;
   align-items: center;
   gap: 0.5rem;
 }
@@ -330,8 +324,15 @@ body {
   font-size: 0.95rem;
 }
 
+.step-line-spacer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+}
+
 .step-line {
-  width: 1.5rem;
+  width: 2rem;
   height: 1px;
   background: var(--fox-rule);
 }

@@ -1,7 +1,10 @@
 name = "fox-web"
 compatibility_date = "2026-11-26"
-main = "src/index.ts"
 workers_dev = true
+
+# NOTE: no `main` entry point — Cloudflare Pages auto-detects Functions
+# from the functions/ directory. src/index.ts is not used as a Workers
+# entry, otherwise it would intercept all /api/* requests and return 404.
 
 # KV namespaces — create these first, then uncomment and fill in the real IDs:
 #   pnpm dlx wrangler kv namespace create TABLE_CONFIG
