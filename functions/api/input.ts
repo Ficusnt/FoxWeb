@@ -1,14 +1,16 @@
 /**
  * GET /api/input — Load saved input rows (D1 or localStorage fallback handled client-side)
- * POST /api/input — Save input rows to D1
+ * POST /api/input — Save input rows to D1 (AUTH REQUIRED on write)
  */
 
-export const onRequestGet: PagesFunction = async ({ env }) => {
+import { authenticate, corsHeaders, jsonResponse } from "../../src/lib/auth"
+
+export const onRequestGet: PagesFunction = async ({ env, request }) => {
   const db = env.FOX_DB
   if (!db) {
-    return new Response(JSON.stringify({ error: "D1 no configurado" }), {
+    return jsonResponse({ error: "D1 no configurado" }, {
       status: 503,
-      headers: { "Content-Type": "application/json" }
+      origin: request.headers.get("Origin")
     })
   }
 
@@ -17,15 +19,18 @@ export const onRequestGet: PagesFunction = async ({ env }) => {
     date: r.date,
     capital: r.capital
   }))
-  return Response.json({ rows })
+  return jsonResponse({ rows }, { origin: request.headers.get("Origin") })
 }
 
 export const onRequestPost: PagesFunction = async ({ env, request }) => {
+  const auth = authenticate(request, env)
+  if (auth) return auth
+
   const db = env.FOX_DB
   if (!db) {
-    return new Response(JSON.stringify({ error: "D1 no configurado" }), {
+    return jsonResponse({ error: "D1 no configurado" }, {
       status: 503,
-      headers: { "Content-Type": "application/json" }
+      origin: request.headers.get("Origin")
     })
   }
 
@@ -41,11 +46,17 @@ export const onRequestPost: PagesFunction = async ({ env, request }) => {
       }
     }
 
-    return Response.json({ ok: true, count: rows.length })
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
+    return jsonResponse({ ok: true, count: rows.length }, {
+      origin: request.headers.get("Origin")
     })
+  } catch (err: any) {
+    return jsonResponse({ error: err.message }, { status: 500, origin: request.headers.get("Origin") })
   }
+}
+
+export const onRequestOptions: PagesFunction = async ({ request }) => {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders(request.headers.get("Origin"))
+  })
 }

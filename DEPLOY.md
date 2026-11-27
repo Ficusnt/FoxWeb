@@ -22,6 +22,10 @@
 #   pnpm dlx wrangler secret put AGENDAE_URL
 #     # value: https://www.agendae.com.ar/
 #
+#   # API auth token — required for all write endpoints
+#   pnpm dlx wrangler secret put API_AUTH_TOKEN
+#     # value: any strong random string (must match VITE_API_AUTH_TOKEN)
+#
 #   # Fill in the printed IDs into wrangler.toml:
 #   #   [[kv_namespaces]] binding = "TABLE_CONFIG"   id = "..."
 #   #   [[kv_namespaces]] binding = "TABLE_CSVS"     id = "..."
@@ -30,8 +34,11 @@
 #
 # Local development:
 #   pnpm dlx wrangler dev   -> http://localhost:8787
+#   # Set VITE_API_AUTH_TOKEN in .env (see .env.example) to match API_AUTH_TOKEN
 #
 # Deploy:
 #   Push to GitHub — Cloudflare Pages auto-deploys.
 #   In Cloudflare Pages dashboard (Settings → Functions), add the same
 #   KV/D1 bindings and secrets for the production deployment.
+#   Set VITE_API_AUTH_TOKEN in Cloudflare Pages env vars (Settings →
+#   Environment variables) to the same value as API_AUTH_TOKEN.

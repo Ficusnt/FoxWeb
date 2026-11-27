@@ -1,16 +1,12 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Save, Play, ArrowLeft, Plus, Minus, LayoutList } from "lucide-react"
+import { ArrowLeft, Plus, Minus, LayoutList } from "lucide-react"
 import Layout from "../components/Layout"
-import Button from "../components/Button"
-import Card from "../components/Card"
 import {
   saveInputRowsToLocal,
   loadInputRowsFromLocal,
 } from "../lib/storage"
 import { normalizeDate, normalizeNumber, formatMoney } from "../lib/normalization"
-
-const ERROR_BG = "#fef2f2"
 
 type Row = {
   id: string
@@ -86,7 +82,7 @@ export default function DataEditor() {
     setErrors(newErrors)
 
     if (newErrors.size > 0) {
-      alert("Hay celdas con valores invalidos. Fecha: MM/AA. Capital: numero.")
+      alert("Hay celdas con valores inválidos. Fecha: MM/AA. Capital: número.")
       return
     }
     if (valid.length === 0) {
@@ -103,25 +99,28 @@ export default function DataEditor() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Datos a calcular</h1>
+            <h1 className="text-3xl font-display font-bold text-fox-ink mb-1">Datos a calcular</h1>
             <p className="text-sm text-gray-500">
-              Fecha: MM/AA  Capital: numero (ej. 15000 o 1.500,50)
+              Fecha: MM/AA  Capital: número (ej. 15000 o 1.500,50)
             </p>
           </div>
-          <Button onClick={() => navigate("/")} variant="outline" size="sm">
+          <button
+            onClick={() => navigate("/")}
+            className="btn btn-ghost"
+          >
             <ArrowLeft size={16} /> Volver
-          </Button>
+          </button>
         </div>
 
-        <Card className="mb-6">
+        <div className="fox-card mb-6">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="ledger-table">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 w-12">#</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500">Fecha</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500">Capital</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 text-right"></th>
+                <tr>
+                  <th className="w-12">#</th>
+                  <th>Fecha</th>
+                  <th>Capital</th>
+                  <th className="text-right"></th>
                 </tr>
               </thead>
               <tbody>
@@ -130,15 +129,15 @@ export default function DataEditor() {
                   return (
                     <tr
                       key={row.id}
-                      className={`border-b border-gray-100 transition-colors ${
+                      className={`border-b border-fox-rule ${
                         i % 2 === 1 ? "bg-gray-50" : ""
                       } ${isErr ? "bg-red-50" : ""}`}
                     >
                       <td className="px-4 py-3 text-xs text-gray-400 font-mono">{i + 1}</td>
                       <td className="px-4 py-3">
                         <input
-                          className={`w-full px-3 py-2 text-sm rounded border focus:ring-2 focus:ring-accent outline-none text-right font-mono ${
-                            isErr ? "border-red-500 ring-2 ring-red-500/20" : "border-gray-300"
+                          className={`fox-input text-right font-mono ${
+                            isErr ? "border-fox-red ring-2 ring-fox-red/20" : "border-fox-rule"
                           }`}
                           value={row.fecha}
                           onChange={e => updateField(i, "fecha", e.target.value)}
@@ -147,8 +146,8 @@ export default function DataEditor() {
                       </td>
                       <td className="px-4 py-3">
                         <input
-                          className={`w-full px-3 py-2 text-sm rounded border focus:ring-2 focus:ring-accent outline-none text-right font-mono ${
-                            isErr ? "border-red-500 ring-2 ring-red-500/20" : "border-gray-300"
+                          className={`fox-input text-right font-mono ${
+                            isErr ? "border-fox-red ring-2 ring-fox-red/20" : "border-fox-rule"
                           }`}
                           value={row.capital}
                           onChange={e => updateField(i, "capital", e.target.value)}
@@ -159,15 +158,14 @@ export default function DataEditor() {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => removeRow(i)}
-                            className="p-2 rounded hover:bg-gray-100 text-gray-500 hover:text-red-500"
-                            disabled={rows.length === 1}
+                            className="p-2 rounded-none hover:bg-gray-100 text-gray-500 hover:text-fox-red"
                             title="Eliminar"
                           >
                             {rows.length === 1 ? "~" : "−"}
                           </button>
                           <button
                             onClick={() => addRow(i)}
-                            className="p-2 rounded hover:bg-accent/50 text-accent hover:bg-accent/100"
+                            className="p-2 rounded-none hover:bg-gray-100 text-fox-blue"
                             title="Insertar debajo"
                           >
                             +
@@ -180,39 +178,39 @@ export default function DataEditor() {
               </tbody>
             </table>
           </div>
-        </Card>
+        </div>
 
         <div className="flex items-end justify-between mb-6">
           <div className="text-right">
-            <div className="text-2xl font-bold text-gray-900">{formatMoney(total)}</div>
+            <div className="text-3xl font-display font-bold text-fox-ink">{formatMoney(total)}</div>
             <div className="text-xs text-gray-500">Total capital</div>
           </div>
         </div>
 
         <div className="flex gap-3">
-          <Button
+          <button
             onClick={() => {
               setRows([{ id: "0", fecha: "", capital: "" }])
               setErrors(new Set())
             }}
-            variant="destructive"
+            className="btn btn-destructive"
           >
             Limpiar tabla
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => {
-              alert("Cargar desde PDF proximamente")
+              alert("Cargar desde PDF próximamente")
             }}
-            variant="outline"
+            className="btn btn-outline"
           >
             Cargar desde PDF
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={handleContinue}
-            variant="default"
+            className="btn btn-primary"
           >
-            Continuar →
-          </Button>
+            Continuar
+          </button>
         </div>
       </div>
     </Layout>

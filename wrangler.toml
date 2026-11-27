@@ -42,3 +42,7 @@ persist = true
 
 [vars]
 ENVIRONMENT = "development"
+
+# API_AUTH_TOKEN — set as a Cloudflare secret (not in code):
+#   pnpm dlx wrangler secret put API_AUTH_TOKEN
+# Then set VITE_API_AUTH_TOKEN in Cloudflare Pages env vars to the same value.

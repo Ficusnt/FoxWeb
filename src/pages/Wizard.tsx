@@ -1,11 +1,8 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { FileText, Percent, ArrowLeft, Play, Download, CheckCircle, Upload } from "lucide-react"
+import { FileText, Percent, Play, Download, CheckCircle, Upload } from "lucide-react"
 import Layout from "../components/Layout"
-import Button from "../components/Button"
-import Card from "../components/Card"
-import CardHeader from "../components/Card"
-import CardFooter from "../components/Card"
+import { apiFetch } from "../lib/api"
 
 type TableFile = { folder: string; name: string; path: string }
 type InputRow = { fecha: string; capital: string }
@@ -42,7 +39,7 @@ export default function Wizard() {
 
   // Load tables when entering step 3 with tabla mode
   if (step === 3 && mode === "tabla" && tables.length === 0) {
-    fetch("/api/tables")
+    apiFetch("/api/tables")
       .then((r) => r.json())
       .then((data: any) => setTables(data.tables ?? []))
       .catch(() => {})
@@ -112,9 +109,8 @@ export default function Wizard() {
         payload.refDate = refDate.toISOString()
       }
 
-      const resp = await fetch("/api/pdf/generate", {
+      const resp = await apiFetch("/api/pdf/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
 
@@ -135,32 +131,33 @@ export default function Wizard() {
 
   const suggestedName = `${admin.trim()}${calleAltura.trim() ? "_" : ""}${calleAltura.trim()}${unidad.trim() ? "_" : ""}${unidad.trim()}`.replace(/_+/g, "_").replace(/_$/, "")
 
-  const stepLabel = step === 1 ? "Seleccionar modo" : step === 2 ? "Ingresar datos" : step === 3 ? "Configurar cálculo" : step === 4 ? "Generar PDF" : ""
+  const stepLabel = step === 1 ? "Seleccionar modo" : step === 2 ? "Ingresar datos" : step === 3 ? "Configurar cálculo" : step === 4 ? "Nombrar y generar" : ""
+
+  const stepLabels = ["Modo", "Datos", "Cálculo", "Nombre"]
 
   return (
     <Layout>
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">FOX — Generador de Reportes</h1>
-          <p className="text-sm text-gray-500">Paso {step} de 4: {stepLabel}</p>
+          <h1 className="text-4xl font-display mb-1">FOX</h1>
+          <p className="text-sm text-gray-500">Actualizador de valores de expensas — coeficientes de agendae.com.ar</p>
         </div>
 
         {/* Step indicator */}
-        <div className="flex items-center gap-2 mb-8">
+        <div className="step-indicator mb-8">
           {[1, 2, 3, 4].map((n) => {
             const active = step >= n
             const completed = step > n
             return (
-              <div key={n} className="flex items-center gap-2">
+              <div key={n} className="step">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
-                    completed ? "bg-green-500 text-white" : active ? "bg-accent text-white" : "bg-gray-200 text-gray-400"
-                  }`}
+                  className={`step-circle ${completed ? "completed" : active ? "active" : ""}`}
                 >
                   {n}
                 </div>
-                {n < 4 && <div className={`w-4 h-0.5 ${completed || step > n ? "bg-green-500" : active ? "bg-accent" : "bg-gray-300"}`} />}
+                {n < 4 && <div className={`step-line ${completed ? "completed" : ""}`} />}
+                <span className="step-label">{stepLabels[n - 1]}</span>
               </div>
             )
           })}
@@ -168,68 +165,61 @@ export default function Wizard() {
 
         {/* Step 1: Mode Selector */}
         {step === 1 && (
-          <Card className="mb-6">
-            <CardHeader
-              title="Seleccionar modo de cálculo"
-              description="Elija cómo desea calcular los valores:"
-            />
-            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button
+          <div className="fox-card">
+            <h2 className="fox-card-title">Seleccionar modo de cálculo</h2>
+            <p className="fox-card-desc">Elija cómo desea calcular los valores:</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button
                 onClick={() => { setMode("tabla"); setStep(2) }}
-                variant={mode === "tabla" ? "default" : "outline"}
-                className="w-full py-4 flex flex-col items-center gap-2"
+                className={`btn btn-primary w-full py-4 flex flex-col items-center gap-2 ${mode === "tabla" ? "bg-fox-blue text-white border-fox-blue" : ""}`}
               >
                 <FileText size={28} className="mb-2" />
-                <span className="font-medium text-gray-900">TABLA</span>
+                <span className="font-medium">TABLA</span>
                 <span className="text-xs text-gray-500">Usar coeficiente de tabla</span>
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => { setMode("porcentaje"); setStep(2) }}
-                variant={mode === "porcentaje" ? "default" : "outline"}
-                className="w-full py-4 flex flex-col items-center gap-2"
+                className={`btn btn-primary w-full py-4 flex flex-col items-center gap-2 ${mode === "porcentaje" ? "bg-fox-blue text-white border-fox-blue" : ""}`}
               >
                 <Percent size={28} className="mb-2" />
-                <span className="font-medium text-gray-900">PORCENTAJE</span>
+                <span className="font-medium">PORCENTAJE</span>
                 <span className="text-xs text-gray-500">Cálculo por % mensual</span>
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => navigate("/scraper")}
-                variant="outline"
-                className="w-full py-4 flex flex-col items-center gap-2 text-sm"
+                className="btn btn-ghost w-full py-4 flex flex-col items-center gap-2 text-sm"
               >
                 <Play size={24} className="mb-2" />
-                <span className="font-medium text-gray-900">Scraper</span>
+                <span className="font-medium">Scraper</span>
                 <span className="text-xs text-gray-500">Configurar tablas de agendae</span>
-              </Button>
+              </button>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Step 2: Data Input */}
         {step === 2 && (
           <>
-            <Card className="mb-6">
-              <CardHeader
-                title="Ingresar datos a calcular"
-                description="Fecha: MM/AA  Capital: número (ej. 15000 o 1.500,50)"
-              />
+            <div className="fox-card mb-6">
+              <h2 className="fox-card-title">Ingresar datos a calcular</h2>
+              <p className="fox-card-desc">Fecha: MM/AA  Capital: número (ej. 15000 o 1.500,50)</p>
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="ledger-table">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 w-12">#</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-gray-500">Fecha</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-gray-500">Capital</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-gray-500 text-right"></th>
+                    <tr>
+                      <th className="w-12">#</th>
+                      <th>Fecha</th>
+                      <th>Capital</th>
+                      <th className="text-right"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {rows.map((row, i) => (
-                      <tr key={i} className="border-b border-gray-100">
+                      <tr key={i} className="border-b border-fox-rule">
                         <td className="px-4 py-3 text-xs text-gray-400 font-mono">{i + 1}</td>
                         <td className="px-4 py-3">
                           <input
-                            className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none text-right font-mono"
+                            className="fox-input text-right font-mono"
                             value={row.fecha}
                             onChange={(e) => updateField(i, "fecha", e.target.value)}
                             placeholder="MM/AA"
@@ -237,7 +227,7 @@ export default function Wizard() {
                         </td>
                         <td className="px-4 py-3">
                           <input
-                            className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none text-right font-mono"
+                            className="fox-input text-right font-mono"
                             value={row.capital}
                             onChange={(e) => updateField(i, "capital", e.target.value)}
                             placeholder="1.500,50"
@@ -247,14 +237,14 @@ export default function Wizard() {
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => removeRow(i)}
-                              className="p-1.5 rounded hover:bg-red-50 text-red-500"
+                              className="p-1.5 rounded-none hover:bg-red-50 text-red-600"
                               disabled={rows.length === 1}
                             >
                               {rows.length === 1 ? "~" : "−"}
                             </button>
                             <button
                               onClick={addRow}
-                              className="ml-2 p-1.5 rounded hover:bg-accent/50 text-accent"
+                              className="ml-2 p-1.5 rounded-none hover:bg-gray-50 text-fox-blue"
                             >
                               +
                             </button>
@@ -265,9 +255,9 @@ export default function Wizard() {
                   </tbody>
                 </table>
               </div>
-              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+              <div className="px-6 py-4 border-t border-fox-rule flex items-center justify-between">
                 <div className="text-right">
-                  <div className="text-sm font-semibold text-gray-900">{formatMoney(total)}</div>
+                  <div className="text-sm font-semibold text-fox-ink">{formatMoney(total)}</div>
                   <div className="text-xs text-gray-500">Total capital</div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -281,37 +271,46 @@ export default function Wizard() {
                       }}
                       className="sr-only"
                     />
-                    <Button variant="outline" size="sm" className="px-3 py-2">
+                    <button className="btn btn-sm btn-outline border-fox-rule px-3 py-2">
                       <Upload size={16} className="mr-1" />
                       Cargar desde PDF
-                    </Button>
+                    </button>
                   </label>
                   {pdfLoadedName && (
-                    <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                    <span className="text-xs text-fox-green bg-green-50 px-2 py-1 rounded-none">
                       {pdfLoadedName}
                     </span>
                   )}
                 </div>
               </div>
-            </Card>
+            </div>
             <div className="flex justify-end gap-3">
-              <Button onClick={() => navigate("/")} variant="outline">
+              <button
+                onClick={() => navigate("/")}
+                className="btn btn-ghost"
+              >
                 Volver al inicio
-              </Button>
-              <Button onClick={() => setStep(3)} variant="default" disabled={rows.length === 0 || !rows.some((r) => r.fecha && r.capital)}>
-                Continuar →
-              </Button>
+              </button>
+              <button
+                onClick={() => setStep(3)}
+                className="btn btn-primary"
+                disabled={rows.length === 0 || !rows.some((r) => r.fecha && r.capital)}
+              >
+                Continuar
+              </button>
             </div>
           </>
         )}
 
         {/* Step 3: Config */}
         {step === 3 && (
-          <Card className="mb-6">
-            <CardHeader
-              title={mode === "tabla" ? "Seleccionar tabla (CSV)" : "Configurar porcentaje"}
-              description={mode === "tabla" ? "Elija el coeficiente de tabla a aplicar" : "Porcentaje base mensual y desplazamiento"}
-            />
+          <div className="fox-card mb-6">
+            <h2 className="fox-card-title">
+              {mode === "tabla" ? "Seleccionar tabla (CSV)" : "Configurar porcentaje"}
+            </h2>
+            <p className="fox-card-desc">
+              {mode === "tabla" ? "Elija el coeficiente de tabla a aplicar" : "Porcentaje base mensual y desplazamiento"}
+            </p>
             <div className="p-6">
               {mode === "tabla" ? (
                 <>
@@ -320,12 +319,12 @@ export default function Wizard() {
                       No se encontraron tablas. Ejecute el scraper primero.
                     </div>
                   ) : (
-                    <div className="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded bg-gray-50 p-3">
+                    <div className="space-y-2 max-h-60 overflow-y-auto border border-fox-rule bg-gray-50 p-3">
                       {tables.map((t) => (
                         <button
                           key={t.path}
                           onClick={() => setSelectedTable(t.path)}
-                          className={`w-full text-left px-3 py-2 rounded border text-left transition text-sm ${
+                          className={`w-full text-left px-3 py-2 rounded-none border text-left transition text-sm ${
                             selectedTable === t.path ? "bg-blue-50 border-blue-300 text-blue-700 font-medium" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                           }`}
                         >
@@ -334,12 +333,10 @@ export default function Wizard() {
                       ))}
                     </div>
                   )}
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Multiplicador global:
-                    </label>
+                  <div className="mt-6 pt-6 border-t border-fox-rule">
+                    <label className="fox-label">Multiplicador global</label>
                     <input
-                      className="w-24 px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                      className="fox-input w-24"
                       value={multiplier}
                       onChange={(e) => setMultiplier(e.target.value)}
                       placeholder="1"
@@ -353,22 +350,18 @@ export default function Wizard() {
                 <>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Porcentaje base mensual (%):
-                      </label>
+                      <label className="fox-label">Porcentaje base mensual (%)</label>
                       <input
-                        className="w-24 px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                        className="fox-input w-24"
                         value={percent}
                         onChange={(e) => setPercent(e.target.value)}
                         placeholder="5"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Desplazar mes:
-                      </label>
+                      <label className="fox-label">Desplazar mes</label>
                       <input
-                        className="w-24 px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                        className="fox-input w-24"
                         value={shift}
                         onChange={(e) => setShift(e.target.value)}
                         placeholder="0"
@@ -381,88 +374,94 @@ export default function Wizard() {
                 </>
               )}
             </div>
-            <div className="px-6 py-4 border-t border-gray-100 flex justify-between">
-              <Button onClick={() => setStep(2)} variant="outline">
+            <div className="px-6 py-4 border-t border-fox-rule flex justify-between">
+              <button
+                onClick={() => setStep(2)}
+                className="btn btn-ghost"
+              >
                 ← Volver
-              </Button>
-              <Button onClick={handleGenerate} variant="default" disabled={loading || (mode === "tabla" && !selectedTable)}>
-                {loading ? "Generando..." : "Generar PDF →"}
-              </Button>
+              </button>
+              <button
+                onClick={handleGenerate}
+                className="btn btn-primary"
+                disabled={loading || (mode === "tabla" && !selectedTable)}
+              >
+                {loading ? "Generando..." : "Generar PDF"}
+              </button>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Step 4: Name & Generate */}
         {step === 4 && (
-          <Card className="mb-6">
-            <CardHeader
-              title="Nombrar y generar reporte"
-              description="Complete los campos para nombrar el archivo PDF"
-            />
+          <div className="fox-card mb-6">
+            <h2 className="fox-card-title">Nombrar y generar reporte</h2>
+            <p className="fox-card-desc">Complete los campos para nombrar el archivo PDF</p>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Administración:
-                </label>
+                <label className="fox-label">Administración</label>
                 <input
-                  className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                  className="fox-input"
                   value={admin}
                   onChange={(e) => setAdmin(e.target.value)}
                   placeholder="Ej. Sanchez Estudio"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Calle y Altura:
-                </label>
+                <label className="fox-label">Calle y altura</label>
                 <input
-                  className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                  className="fox-input"
                   value={calleAltura}
                   onChange={(e) => setCalleAltura(e.target.value)}
-                  placeholder="Ej. San Martin 453"
+                  placeholder="Ej. San Martín 453"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Unidad:
-                </label>
+                <label className="fox-label">Unidad</label>
                 <input
-                  className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                  className="fox-input"
                   value={unidad}
                   onChange={(e) => setUnidad(e.target.value)}
                   placeholder="Ej. U 04-01"
                 />
               </div>
-              <div className="bg-gray-50 rounded p-3 text-xs text-gray-600">
+              <div className="bg-gray-50 rounded-none p-3 border border-fox-rule text-xs text-gray-600">
                 Nombre del archivo:{" "}
-                <span className="font-mono text-gray-900 font-medium">
+                <span className="font-mono text-fox-ink font-medium">
                   {suggestedName || "admin_calle_unidad"}.pdf
                 </span>
               </div>
             </div>
             <div className="flex justify-between gap-3">
-              <Button onClick={() => setStep(3)} variant="outline">
+              <button
+                onClick={() => setStep(3)}
+                className="btn btn-ghost"
+              >
                 ← Volver
-              </Button>
-              <Button onClick={handleGenerate} variant="default" disabled={loading || !admin || !calleAltura || !unidad}>
+              </button>
+              <button
+                onClick={handleGenerate}
+                className="btn btn-primary"
+                disabled={loading || !admin || !calleAltura || !unidad}
+              >
                 {loading ? "Generando PDF..." : "Generar PDF"}
-              </Button>
+              </button>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Step 4b: PDF Preview & Download */}
         {pdfUrl && (
-          <Card className="mt-6">
+          <div className="fox-card mt-6">
             <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={32} className="text-green-600" />
+              <div className="w-16 h-16 bg-green-100 rounded-none flex items-center justify-center mx-auto mb-4 border border-fox-green">
+                <CheckCircle size={32} className="text-fox-green" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-3">PDF generado correctamente</h3>
+              <h2 className="text-2xl font-display font-bold text-fox-ink mb-3">PDF generado correctamente</h2>
               <p className="text-sm text-gray-600 mb-6">
                 Su reporte está listo para descargar.
               </p>
-              <Button
+              <button
                 onClick={() => {
                   const link = document.createElement("a")
                   link.href = pdfUrl
@@ -471,41 +470,35 @@ export default function Wizard() {
                   link.click()
                   document.body.removeChild(link)
                 }}
-                variant="default"
-                className="w-full flex items-center justify-center gap-2 mb-6"
+                className="btn btn-primary w-full flex items-center justify-center gap-2 mb-6"
               >
                 <Download size={18} />
                 Descargar PDF
-              </Button>
+              </button>
               <div className="flex gap-3 justify-center">
-                <Button onClick={() => setStep(1)} variant="outline" size="sm">
+                <button
+                  onClick={() => setStep(1)}
+                  className="btn btn-ghost btn-sm"
+                >
                   Nuevo reporte
-                </Button>
-                <Button onClick={() => navigate("/")} variant="ghost" size="sm">
+                </button>
+                <button
+                  onClick={() => navigate("/")}
+                  className="btn btn-ghost btn-sm"
+                >
                   Inicio
-                </Button>
+                </button>
               </div>
             </div>
-          </Card>
+          </div>
         )}
 
         {message && (
           <div
-            className={`mt-4 p-4 rounded-lg text-sm flex items-center gap-3 ${
-              message.startsWith("Error")
-                ? "bg-red-50 border border-red-200 text-red-700"
-                : "bg-green-50 border border-green-200 text-green-700"
+            className={`fox-message ${
+              message.startsWith("Error") ? "fox-message-error" : "fox-message-success"
             }`}
           >
-            {message.startsWith("Error") ? (
-              <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            )}
             {message}
           </div>
         )}

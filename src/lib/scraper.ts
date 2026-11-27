@@ -320,70 +320,78 @@ export async function runScrape(
     }
   }
 
-  const results: Array<{ name: string; status: string }> = []
-
-  for (const t of config.tables) {
-    const folder = t.name.split("_", 1)[0].toUpperCase()
-    const m = t.url.match(/[?&]t=(\d+)/)
-    if (!m) {
-      results.push({ name: t.name, status: "omitido (sin parametro ?t=N)" })
-      continue
-    }
-    const idct = parseInt(m[1], 10)
-
-    try {
-      // Visit table page first (sets Referer + session state)
-      const pageResp = await fetch(t.url, {
-        ...baseInit({
-          headers: { Cookie: jar.getHeader() ?? "" }
-        }),
-        redirect: "manual"
-      })
-      jar.setFromResponse(pageResp.headers)
-
-      if (pageResp.url.includes("noacceso")) {
-        results.push({ name: t.name, status: "sin acceso" })
-        continue
-      }
-
-      const data = await fetchTablaJson(baseUrl, t.url, idct, jar)
-      const csv = matrixToCsv(data)
-
-      // Save current CSV to KV
-      const currentPath = `${folder}/${t.name}.csv`
-      await env.TABLE_CSVS.put(currentPath, csv)
-
-      // Handle snapshot rotation: if month changed, move current to snapshot
-      const best = bestKey(data)
-      const nuevoMes = best ? `${best[0]}-${best[1] + 1}` : null
-
-      if (nuevoMes) {
-        const existingRaw = await env.TABLE_CSVS.get(currentPath)
-        if (existingRaw) {
-          const oldMes = leerRepresentacionFromCsv(existingRaw)
-          if (oldMes && oldMes !== nuevoMes) {
-            const snapPath = `${folder}/${t.name}_${oldMes}.csv`
-            await env.TABLE_CSVS.put(snapPath, existingRaw)
-          }
-        }
-      }
-
-      // Apply retention: prune old snapshots from KV
-      await aplicarRetencionKV(env.TABLE_CSVS, folder, t.name, config.retencion)
-
-      results.push({ name: t.name, status: "guardado" })
-    } catch (err: any) {
-      results.push({ name: t.name, status: `error: ${err.message}` })
-    }
-
-    // Small delay between tables
-    await new Promise(r => setTimeout(r, 1000))
-  }
+  // Fetch all tables concurrently
+  const results = await Promise.all(
+    config.tables.map(t => scrapeTable(env.TABLE_CSVS, jar, baseUrl, t, config.retencion))
+  )
 
   return {
     ok: results.every(r => r.status === "guardado"),
     message: "Proceso de actualizacion finalizado",
     results
+  }
+}
+
+/**
+ * Fetch a single table: visit page, fetch JSON via _back.aspx, save CSV to KV,
+ * handle snapshot rotation, and apply retention. Returns a status result.
+ */
+async function scrapeTable(
+  kv: KVNamespace,
+  jar: CookieJar,
+  baseUrl: string,
+  t: TableEntry,
+  retencion: number
+): Promise<{ name: string; status: string }> {
+  const folder = t.name.split("_", 1)[0].toUpperCase()
+  const m = t.url.match(/[?&]t=(\d+)/)
+  if (!m) {
+    return { name: t.name, status: "omitido (sin parametro ?t=N)" }
+  }
+  const idct = parseInt(m[1], 10)
+
+  try {
+    // Visit table page first (sets Referer + session state)
+    const pageResp = await fetch(t.url, {
+      ...baseInit({
+        headers: { Cookie: jar.getHeader() ?? "" }
+      }),
+      redirect: "manual"
+    })
+    jar.setFromResponse(pageResp.headers)
+
+    if (pageResp.url.includes("noacceso")) {
+      return { name: t.name, status: "sin acceso" }
+    }
+
+    const data = await fetchTablaJson(baseUrl, t.url, idct, jar)
+    const csv = matrixToCsv(data)
+
+    // Save current CSV to KV
+    const currentPath = `${folder}/${t.name}.csv`
+    await kv.put(currentPath, csv)
+
+    // Handle snapshot rotation: if month changed, move current to snapshot
+    const best = bestKey(data)
+    const nuevoMes = best ? `${best[0]}-${best[1] + 1}` : null
+
+    if (nuevoMes) {
+      const existingRaw = await kv.get(currentPath)
+      if (existingRaw) {
+        const oldMes = leerRepresentacionFromCsv(existingRaw)
+        if (oldMes && oldMes !== nuevoMes) {
+          const snapPath = `${folder}/${t.name}_${oldMes}.csv`
+          await kv.put(snapPath, existingRaw)
+        }
+      }
+    }
+
+    // Apply retention: prune old snapshots from KV
+    await aplicarRetencionKV(kv, folder, t.name, retencion)
+
+    return { name: t.name, status: "guardado" }
+  } catch (err: any) {
+    return { name: t.name, status: `error: ${err.message}` }
   }
 }
 

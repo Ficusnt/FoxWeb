@@ -2,8 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { FileText, Settings, Play, ArrowRight } from "lucide-react"
 import Layout from "../components/Layout"
-import Button from "../components/Button"
-import Card from "../components/Card"
+import { apiFetch } from "../lib/api"
 
 export default function Home() {
   const navigate = useNavigate()
@@ -12,7 +11,7 @@ export default function Home() {
   const runScraper = async () => {
     setScraperStatus(null)
     try {
-      const r = await fetch("/api/scraper/run", { method: "POST" })
+      const r = await apiFetch("/api/scraper/run", { method: "POST" })
       const data = await r.json()
       setScraperStatus({ ok: data.ok, message: data.message })
     } catch (err: any) {
@@ -24,93 +23,104 @@ export default function Home() {
     <Layout>
       <div className="max-w-3xl mx-auto">
         <div className="flex flex-col items-center justify-center text-center mb-12">
-          <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center mb-6 text-accent">
+          <div className="w-16 h-16 bg-fox-blue/10 rounded-none flex items-center justify-center mb-6 text-fox-blue border border-fox-blue">
             <FileText size={32} />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">FOX</h1>
+          <h1 className="text-4xl font-display font-bold text-fox-ink mb-4">FOX</h1>
           <p className="text-lg text-gray-600">
             Actualizador de valores de expensas — coeficientes de agendae.com.ar
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card>
-            <Card.Header>
+          <div className="fox-card">
+            <div className="fox-card-header">
               <FileText size={24} className="text-gray-600" />
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Datos a calcular</h3>
-                <p className="text-sm text-gray-500">Ingresar fechas y capitales</p>
+                <h3 className="fox-card-title">Datos a calcular</h3>
+                <p className="fox-card-desc">Ingresar fechas y capitales</p>
               </div>
-            </Card.Header>
-            <Card.Footer>
-              <Button onClick={() => navigate("/editor")} variant="default" size="sm" className="w-full">
-                Ir a Datos <ArrowRight size={16} />
-              </Button>
-            </Card.Footer>
-          </Card>
+            </div>
+            <div className="fox-card-footer">
+              <button
+                onClick={() => navigate("/editor")}
+                className="btn btn-primary w-full"
+              >
+                Ir a datos
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
 
-          <Card>
-            <Card.Header>
+          <div className="fox-card">
+            <div className="fox-card-header">
               <Settings size={24} className="text-gray-600" />
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Configurar scraper</h3>
-                <p className="text-sm text-gray-500">Tablas y retención</p>
+                <h3 className="fox-card-title">Configurar scraper</h3>
+                <p className="fox-card-desc">Tablas y retención</p>
               </div>
-            </Card.Header>
-            <Card.Footer>
-              <Button onClick={() => navigate("/scraper")} variant="default" size="sm" className="w-full">
-                Configurar <ArrowRight size={16} />
-              </Button>
-            </Card.Footer>
-          </Card>
+            </div>
+            <div className="fox-card-footer">
+              <button
+                onClick={() => navigate("/scraper")}
+                className="btn btn-primary w-full"
+              >
+                Configurar
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
 
-          <Card>
-            <Card.Header>
+          <div className="fox-card">
+            <div className="fox-card-header">
               <Play size={24} className="text-gray-600" />
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Generar reporte</h3>
-                <p className="text-sm text-gray-500">PDF con cálculos</p>
+                <h3 className="fox-card-title">Generar reporte</h3>
+                <p className="fox-card-desc">PDF con cálculos</p>
               </div>
-            </Card.Header>
-            <Card.Footer>
-              <Button onClick={() => navigate("/wizard")} variant="default" size="sm" className="w-full">
-                Generar PDF <ArrowRight size={16} />
-              </Button>
-            </Card.Footer>
-          </Card>
+            </div>
+            <div className="fox-card-footer">
+              <button
+                onClick={() => navigate("/")}
+                className="btn btn-primary w-full"
+              >
+                Generar PDF
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <Card className="mt-8">
-          <Card.Header>
+        <div className="fox-card mt-8">
+          <div className="fox-card-header">
             <Play size={20} className="text-white" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Actualizar tablas desde agendae.com.ar</h3>
-              <p className="text-sm text-gray-500">Descarga los coeficientes más recientes del servidor</p>
+              <h3 className="fox-card-title">Actualizar tablas desde agendae.com.ar</h3>
+              <p className="fox-card-desc">Descarga los coeficientes más recientes del servidor</p>
             </div>
-          </Card.Header>
+          </div>
           <div className="p-6">
-            <Button
+            <button
               onClick={runScraper}
-              variant="default"
-              className="w-full flex items-center justify-center gap-2"
+              className="btn btn-primary w-full flex items-center justify-center gap-2"
             >
               <Play size={18} />
               Ejecutar actualización de tablas
-            </Button>
+            </button>
             {scraperStatus && (
               <div
-                className={`mt-4 p-4 rounded-lg text-sm flex items-center gap-3 ${
+                className={`mt-4 p-4 rounded-none border ${
                   scraperStatus.ok
-                    ? "bg-green-50 border border-green-200 text-green-700"
-                    : "bg-red-50 border border-red-200 text-red-700"
+                    ? "border-fox-green bg-green-50 text-fox-green"
+                    : "border-fox-red bg-red-50 text-fox-red"
                 }`}
               >
                 {scraperStatus.ok ? (
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-fox-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-fox-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 )}
@@ -118,7 +128,7 @@ export default function Home() {
               </div>
             )}
           </div>
-        </Card>
+        </div>
       </div>
     </Layout>
   )

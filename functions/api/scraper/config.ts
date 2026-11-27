@@ -1,17 +1,21 @@
 /**
- * GET /api/scraper/config — Read scraper configuration from KV
- * POST /api/scraper/config — Save scraper configuration to KV
+ * GET /api/scraper/config — Read scraper configuration from KV (read-only, no auth)
+ * POST /api/scraper/config — Save scraper configuration to KV (AUTH REQUIRED)
  */
 
-import type { ScraperConfig, TableEntry } from "../../../src/types"
+import { authenticate, corsHeaders, jsonResponse } from "../../../src/lib/auth"
+import type { ScraperConfig } from "../../../src/types"
 import { readScraperConfig, writeScraperConfig } from "../../../src/lib/scraper"
 
-export const onRequestGet: PagesFunction = async ({ env }) => {
+export const onRequestGet: PagesFunction = async ({ env, request }) => {
   const config = await readScraperConfig(env.TABLE_CONFIG)
-  return Response.json(config)
+  return jsonResponse(config, { origin: request.headers.get("Origin") })
 }
 
 export const onRequestPost: PagesFunction = async ({ env, request }) => {
+  const auth = authenticate(request, env)
+  if (auth) return auth
+
   try {
     const body = (await request.json()) as Partial<ScraperConfig>
     const current = await readScraperConfig(env.TABLE_CONFIG)
@@ -24,25 +28,31 @@ export const onRequestPost: PagesFunction = async ({ env, request }) => {
     // Validate entries
     for (const t of config.tables) {
       if (!t.name || !t.url) {
-        return new Response(JSON.stringify({ error: "Cada tabla necesita nombre y URL" }), {
+        return jsonResponse({ error: "Cada tabla necesita nombre y URL" }, {
           status: 400,
-          headers: { "Content-Type": "application/json" }
+          origin: request.headers.get("Origin")
         })
       }
       if (!t.url.toLowerCase().startsWith("http")) {
-        return new Response(JSON.stringify({ error: "URL debe comenzar con http(s)" }), {
+        return jsonResponse({ error: "URL debe comenzar con http(s)" }, {
           status: 400,
-          headers: { "Content-Type": "application/json" }
+          origin: request.headers.get("Origin")
         })
       }
     }
 
     await writeScraperConfig(env.TABLE_CONFIG, config)
-    return Response.json({ ok: true, message: "Configuracion guardada", config })
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
+    return jsonResponse({ ok: true, message: "Configuracion guardada", config }, {
+      origin: request.headers.get("Origin")
     })
+  } catch (err: any) {
+    return jsonResponse({ error: err.message }, { status: 500, origin: request.headers.get("Origin") })
   }
+}
+
+export const onRequestOptions: PagesFunction = async ({ request }) => {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders(request.headers.get("Origin"))
+  })
 }

@@ -1,9 +1,11 @@
 /**
- * GET /api/tables — List available CSV tables from KV
+ * GET /api/tables — List available CSV tables from KV (read-only, no auth)
  * Returns [{ folder, name, path }]
  */
 
-export const onRequestGet: PagesFunction = async ({ env }) => {
+import { corsHeaders, jsonResponse } from "../../src/lib/auth"
+
+export const onRequestGet: PagesFunction = async ({ env, request }) => {
   const kv = env.TABLE_CSVS!
   const listed = await kv.list()
   const tables: Array<{ folder: string; name: string; path: string }> = []
@@ -26,5 +28,12 @@ export const onRequestGet: PagesFunction = async ({ env }) => {
   }
 
   tables.sort((a, b) => a.path.localeCompare(b.path))
-  return Response.json({ tables })
+  return jsonResponse({ tables }, { origin: request.headers.get("Origin") })
+}
+
+export const onRequestOptions: PagesFunction = async ({ request }) => {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders(request.headers.get("Origin"))
+  })
 }

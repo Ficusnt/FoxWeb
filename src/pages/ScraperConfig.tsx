@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft } from "lucide-react"
 import Layout from "../components/Layout"
-import Button from "../components/Button"
-import Card from "../components/Card"
+import { apiFetch } from "../lib/api"
 
 type TableEntry = {
   id: string
@@ -17,9 +16,19 @@ export default function ScraperConfig() {
   const [retencion, setRetencion] = useState("6")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Clear pending debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
-    fetch("/api/scraper/config")
+    apiFetch("/api/scraper/config")
       .then(r => r.json())
       .then((data: any) => {
         setRetencion(String(data.retencion ?? 6))
@@ -40,9 +49,8 @@ export default function ScraperConfig() {
 
   const persist = () => {
     const valid = entries.filter(e => e.name.trim() && e.url.trim())
-    fetch("/api/scraper/config", {
+    apiFetch("/api/scraper/config", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         retencion: parseInt(retencion, 10) || 6,
         tables: valid.map(e => ({ name: e.name.trim(), url: e.url.trim() }))
@@ -84,15 +92,15 @@ export default function ScraperConfig() {
       next[index] = { ...next[index], [field]: value }
       return next
     })
-    clearTimeout((window as any)._persistTimer)
-    ;(window as any)._persistTimer = setTimeout(() => persist(), 300)
+    clearTimeout(timerRef.current ?? undefined)
+    timerRef.current = setTimeout(() => persist(), 300)
   }
 
   const handleRunScraper = async () => {
     setLoading(true)
     setMessage("Ejecutando scraper...")
     try {
-      const resp = await fetch("/api/scraper/run", { method: "POST" })
+      const resp = await apiFetch("/api/scraper/run", { method: "POST" })
       const data = await resp.json()
       if (data.ok) {
         setMessage("Tablas actualizadas correctamente")
@@ -112,22 +120,25 @@ export default function ScraperConfig() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Configuración del scraper</h1>
+            <h1 className="text-3xl font-display font-bold text-fox-ink mb-1">Configuración del scraper</h1>
             <p className="text-sm text-gray-500">Editar TABLAS/config.txt</p>
           </div>
-          <Button onClick={() => navigate("/")} variant="outline" size="sm">
+          <button
+            onClick={() => navigate("/")}
+            className="btn btn-ghost"
+          >
             <ArrowLeft size={16} /> Volver
-          </Button>
+          </button>
         </div>
 
-        <Card className="mb-6">
+        <div className="fox-card mb-6">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="ledger-table">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500">Nombre</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 w-3/4">URL</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 text-right"></th>
+                <tr>
+                  <th>Nombre</th>
+                  <th className="w-3/4">URL</th>
+                  <th className="text-right"></th>
                 </tr>
               </thead>
               <tbody>
@@ -137,14 +148,12 @@ export default function ScraperConfig() {
                   return (
                     <tr
                       key={entry.id}
-                      className={`border-b border-gray-100 transition-colors ${
-                        i % 2 === 1 ? "bg-gray-50" : ""
-                      } ${isErr ? "bg-red-50" : ""}`}
+                      className={`border-b border-fox-rule ${isErr ? "bg-red-50" : ""}`}
                     >
                       <td className="px-4 py-3">
                         <input
-                          className={`w-full px-3 py-2 text-sm rounded border focus:ring-2 focus:ring-accent outline-none ${
-                            isErr ? "border-red-500 ring-2 ring-red-500/20" : "border-gray-300"
+                          className={`fox-input ${
+                            isErr ? "border-fox-red ring-2 ring-fox-red/20" : "border-fox-rule"
                           }`}
                           value={entry.name}
                           onChange={e => updateField(i, "name", e.target.value)}
@@ -153,8 +162,8 @@ export default function ScraperConfig() {
                       </td>
                       <td className="px-4 py-3">
                         <input
-                          className={`w-full px-3 py-2 text-sm rounded border focus:ring-2 focus:ring-accent outline-none ${
-                            isErr ? "border-red-500 ring-2 ring-red-500/20" : "border-gray-300"
+                          className={`fox-input ${
+                            isErr ? "border-fox-red ring-2 ring-fox-red/20" : "border-fox-rule"
                           }`}
                           value={entry.url}
                           onChange={e => updateField(i, "url", e.target.value)}
@@ -165,14 +174,14 @@ export default function ScraperConfig() {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => removeRow(i)}
-                            className="p-2 rounded hover:bg-gray-100 text-gray-500 hover:text-red-500"
+                            className="p-2 rounded-none hover:bg-gray-100 text-gray-500 hover:text-fox-red"
                             title="Eliminar"
                           >
                             −
                           </button>
                           <button
                             onClick={() => addRow(i)}
-                            className="p-2 rounded hover:bg-accent/50 text-accent hover:bg-accent/100"
+                            className="p-2 rounded-none hover:bg-gray-100 text-fox-blue"
                             title="Insertar debajo"
                           >
                             +
@@ -186,23 +195,26 @@ export default function ScraperConfig() {
             </table>
           </div>
           <div className="mt-4 flex items-end justify-between">
-            <Button onClick={() => persist()} variant="outline" size="sm">
-              Guardar en config.txt
-            </Button>
+            <button
+              onClick={() => persist()}
+              className="btn btn-outline btn-sm"
+            >
+              Guardar configuración
+            </button>
             {message && (
-              <span className="text-sm text-green-600">{message}</span>
+              <span className="text-sm text-fox-green">{message}</span>
             )}
           </div>
-        </Card>
+        </div>
 
-        <Card className="mb-6">
+        <div className="fox-card mb-6">
           <div className="px-6 py-4">
             <div className="flex items-center gap-3 mb-3">
-              <h3 className="text-lg font-semibold text-gray-900">Retención de snapshots (meses)</h3>
+              <h3 className="text-lg font-display font-bold text-fox-ink">Retención de snapshots (meses)</h3>
             </div>
             <div className="flex items-center gap-4">
               <input
-                className="w-24 px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                className="fox-input w-24"
                 value={retencion}
                 onChange={e => setRetencion(e.target.value)}
                 onBlur={persist}
@@ -212,16 +224,16 @@ export default function ScraperConfig() {
               </p>
             </div>
           </div>
-        </Card>
+        </div>
 
         <div className="flex justify-end">
-          <Button
+          <button
             onClick={handleRunScraper}
-            variant="default"
+            className="btn btn-primary"
             disabled={loading || !hasValidEntries}
           >
             {loading ? "Ejecutando..." : "Ejecutar scraper ahora"}
-          </Button>
+          </button>
         </div>
       </div>
     </Layout>

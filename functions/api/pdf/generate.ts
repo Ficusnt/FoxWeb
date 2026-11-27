@@ -1,5 +1,5 @@
 /**
- * POST /api/pdf/generate — Generate a PDF report
+ * POST /api/pdf/generate — Generate a PDF report (AUTH REQUIRED)
  *
  * Body:
  *   { inputRows: [{date, capital}], mode: "tabla"|"porcentaje",
@@ -11,12 +11,16 @@
  * and streams it directly as the HTTP response.
  */
 
+import { authenticate, corsHeaders, jsonResponse } from "../../../src/lib/auth"
 import { generatePdf } from "../../../src/lib/pdf"
 import { fromTabla, fromPercent } from "../../../src/lib/calculation"
 import { loadTableFromKV } from "../../../src/lib/calculation"
 import type { InputRow } from "../../../src/types"
 
 export const onRequestPost: PagesFunction = async ({ env, request }) => {
+  const auth = authenticate(request, env)
+  if (auth) return auth
+
   try {
     const body = (await request.json()) as any
     const {
@@ -33,9 +37,9 @@ export const onRequestPost: PagesFunction = async ({ env, request }) => {
     } = body
 
     if (!inputRows || !Array.isArray(inputRows) || inputRows.length === 0) {
-      return new Response(JSON.stringify({ error: "No hay datos de entrada" }), {
+      return jsonResponse({ error: "No hay datos de entrada" }, {
         status: 400,
-        headers: { "Content-Type": "application/json" }
+        origin: request.headers.get("Origin")
       })
     }
 
@@ -48,9 +52,9 @@ export const onRequestPost: PagesFunction = async ({ env, request }) => {
 
     if (mode === "tabla") {
       if (!tablePath) {
-        return new Response(JSON.stringify({ error: "Seleccione una tabla CSV" }), {
+        return jsonResponse({ error: "Seleccione una tabla CSV" }, {
           status: 400,
-          headers: { "Content-Type": "application/json" }
+          origin: request.headers.get("Origin")
         })
       }
 
@@ -61,9 +65,9 @@ export const onRequestPost: PagesFunction = async ({ env, request }) => {
 
       const csvMatrix = await loadTableFromKV(env.TABLE_CSVS!, folder, name!)
       if (!csvMatrix) {
-        return new Response(JSON.stringify({ error: "No se pudo cargar la tabla CSV" }), {
+        return jsonResponse({ error: "No se pudo cargar la tabla CSV" }, {
           status: 404,
-          headers: { "Content-Type": "application/json" }
+          origin: request.headers.get("Origin")
         })
       }
 
@@ -75,16 +79,24 @@ export const onRequestPost: PagesFunction = async ({ env, request }) => {
 
     const pdfBytes = await generatePdf(report)
 
-    return new Response(pdfBytes, {
+    return new Response(new Blob([pdfBytes as any]), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="reporte_${outputName}.pdf"`
+        "Content-Disposition": `attachment; filename="reporte_${outputName}.pdf"`,
+        ...corsHeaders(request.headers.get("Origin"))
       }
     })
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message || "Error interno" }), {
+    return jsonResponse({ error: err.message || "Error interno" }, {
       status: 500,
-      headers: { "Content-Type": "application/json" }
+      origin: request.headers.get("Origin")
     })
   }
+}
+
+export const onRequestOptions: PagesFunction = async ({ request }) => {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders(request.headers.get("Origin"))
+  })
 }
