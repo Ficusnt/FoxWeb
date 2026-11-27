@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom"
 import { FileText, Percent, ArrowLeft, Play, Download, CheckCircle, Upload } from "lucide-react"
 import Layout from "../components/Layout"
 import Button from "../components/Button"
-import Card, { CardHeader } from "../components/Card"
+import Card from "../components/Card"
+import CardHeader from "../components/Card"
+import CardFooter from "../components/Card"
 
 type TableFile = { folder: string; name: string; path: string }
 type InputRow = { fecha: string; capital: string }
@@ -54,8 +56,6 @@ export default function Wizard() {
     return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 }).format(val)
   }
 
-  const goTo = (n: number) => setStep(n)
-
   const addRow = () => {
     setRows([...rows, { fecha: "", capital: "" }])
   }
@@ -72,11 +72,6 @@ export default function Wizard() {
     const next = [...rows]
     next[idx] = { ...next[idx], [field]: value }
     setRows(next)
-  }
-
-  const handlePdfFile = (file: File) => {
-    setPdfLoadedName(file.name.replace(/\.pdf$/i, ""))
-    setMessage(`PDF cargado: ${file.name}. Las filas se extraerán al generar el reporte.`)
   }
 
   const handleGenerate = async () => {
@@ -138,7 +133,7 @@ export default function Wizard() {
     setLoading(false)
   }
 
-  const suggestedName = `${admin.trim()}${calleAltura.trim() ? "_" : ""}${calleAltura.trim()}${unidad.trim() ? "_" : ""}${unidad.trim()}`.replace(/_+/g, "_").replace(/^_|_$/g, "")
+  const suggestedName = `${admin.trim()}${calleAltura.trim() ? "_" : ""}${calleAltura.trim()}${unidad.trim() ? "_" : ""}${unidad.trim()}`.replace(/_+/g, "_").replace(/_$/, "")
 
   const stepLabel = step === 1 ? "Seleccionar modo" : step === 2 ? "Ingresar datos" : step === 3 ? "Configurar cálculo" : step === 4 ? "Generar PDF" : ""
 
@@ -174,10 +169,10 @@ export default function Wizard() {
         {/* Step 1: Mode Selector */}
         {step === 1 && (
           <Card className="mb-6">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900">Seleccionar modo de cálculo</h3>
-              <p className="text-sm text-gray-500">Elija cómo desea calcular los valores:</p>
-            </div>
+            <CardHeader
+              title="Seleccionar modo de cálculo"
+              description="Elija cómo desea calcular los valores:"
+            />
             <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
               <Button
                 onClick={() => { setMode("tabla"); setStep(2) }}
@@ -249,19 +244,21 @@ export default function Wizard() {
                           />
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <button
-                            onClick={() => removeRow(i)}
-                            className="p-1.5 rounded hover:bg-red-50 text-red-500"
-                            disabled={rows.length === 1}
-                          >
-                            {rows.length === 1 ? "~" : "−"}
-                          </button>
-                          <button
-                            onClick={addRow}
-                            className="ml-2 p-1.5 rounded hover:bg-accent/50 text-accent"
-                          >
-                            +
-                          </button>
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => removeRow(i)}
+                              className="p-1.5 rounded hover:bg-red-50 text-red-500"
+                              disabled={rows.length === 1}
+                            >
+                              {rows.length === 1 ? "~" : "−"}
+                            </button>
+                            <button
+                              onClick={addRow}
+                              className="ml-2 p-1.5 rounded hover:bg-accent/50 text-accent"
+                            >
+                              +
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -280,7 +277,7 @@ export default function Wizard() {
                       accept=".pdf"
                       onChange={(e) => {
                         const file = e.target.files?.[0]
-                        if (file) handlePdfFile(file)
+                        if (file) setPdfLoadedName(file.name.replace(/\.pdf$/i, ""))
                       }}
                       className="sr-only"
                     />
@@ -397,54 +394,52 @@ export default function Wizard() {
 
         {/* Step 4: Name & Generate */}
         {step === 4 && (
-          <>
-            <Card className="mb-6">
-              <CardHeader
-                title="Nombrar y generar reporte"
-                description="Complete los campos para nombrar el archivo PDF"
-              />
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Administración:
-                  </label>
-                  <input
-                    className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
-                    value={admin}
-                    onChange={(e) => setAdmin(e.target.value)}
-                    placeholder="Ej. Sanchez Estudio"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Calle y Altura:
-                  </label>
-                  <input
-                    className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
-                    value={calleAltura}
-                    onChange={(e) => setCalleAltura(e.target.value)}
-                    placeholder="Ej. San Martin 453"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Unidad:
-                  </label>
-                  <input
-                    className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
-                    value={unidad}
-                    onChange={(e) => setUnidad(e.target.value)}
-                    placeholder="Ej. U 04-01"
-                  />
-                </div>
-                <div className="bg-gray-50 rounded p-3 text-xs text-gray-600">
-                  Nombre del archivo:{" "}
-                  <span className="font-mono text-gray-900 font-medium">
-                    {suggestedName || "admin_calle_unidad"}.pdf
-                  </span>
-                </div>
+          <Card className="mb-6">
+            <CardHeader
+              title="Nombrar y generar reporte"
+              description="Complete los campos para nombrar el archivo PDF"
+            />
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Administración:
+                </label>
+                <input
+                  className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                  value={admin}
+                  onChange={(e) => setAdmin(e.target.value)}
+                  placeholder="Ej. Sanchez Estudio"
+                />
               </div>
-            </Card>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Calle y Altura:
+                </label>
+                <input
+                  className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                  value={calleAltura}
+                  onChange={(e) => setCalleAltura(e.target.value)}
+                  placeholder="Ej. San Martin 453"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Unidad:
+                </label>
+                <input
+                  className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-accent outline-none"
+                  value={unidad}
+                  onChange={(e) => setUnidad(e.target.value)}
+                  placeholder="Ej. U 04-01"
+                />
+              </div>
+              <div className="bg-gray-50 rounded p-3 text-xs text-gray-600">
+                Nombre del archivo:{" "}
+                <span className="font-mono text-gray-900 font-medium">
+                  {suggestedName || "admin_calle_unidad"}.pdf
+                </span>
+              </div>
+            </div>
             <div className="flex justify-between gap-3">
               <Button onClick={() => setStep(3)} variant="outline">
                 ← Volver
@@ -453,7 +448,7 @@ export default function Wizard() {
                 {loading ? "Generando PDF..." : "Generar PDF"}
               </Button>
             </div>
-          </>
+          </Card>
         )}
 
         {/* Step 4b: PDF Preview & Download */}
@@ -463,7 +458,7 @@ export default function Wizard() {
               <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <CheckCircle size={32} className="text-green-600" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">PDF generado correctamente</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-3">PDF generado correctamente</h3>
               <p className="text-sm text-gray-600 mb-6">
                 Su reporte está listo para descargar.
               </p>
