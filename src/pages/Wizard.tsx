@@ -186,14 +186,14 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
             const completed = step > n
             const isLast = i === 3
             return (
-              <React.Fragment key={n}>
+              <div key={n} className="step-segment">
                 <div
                   className={`step-circle ${completed ? "completed" : active ? "active" : ""}`}
                 >
                   {n}
                 </div>
                 {!isLast && <div className="step-line"></div>}
-              </React.Fragment>
+              </div>
             )
           })}
         </div>
@@ -204,6 +204,7 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
                 {label}
               </span>
             </div>
+            {!isLast && <div className="step-line-label"></div>}
           ))}
         </div>
 
