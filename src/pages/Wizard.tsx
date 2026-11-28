@@ -186,23 +186,25 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
             const completed = step > n
             const isLast = i === 3
             return (
-              <div key={n} className="step-group">
+              <React.Fragment key={n}>
                 <div
                   className={`step-circle ${completed ? "completed" : active ? "active" : ""}`}
                 >
                   {n}
                 </div>
-                <span className={`step-label ${active ? "text-fox-ink font-semibold" : "text-gray-500"}`}>
-                  {stepLabels[n - 1]}
-                </span>
-                {!isLast && (
-                  <div className="step-line">
-                    <div className={`step-line-fill ${completed ? "completed" : ""}`} />
-                  </div>
-                )}
-              </div>
+                {!isLast && <div className="step-line"></div>}
+              </React.Fragment>
             )
           })}
+        </div>
+        <div className="step-labels mt-2">
+          {stepLabels.map((label, i) => (
+            <div key={label} className="step-label-cell">
+              <span className={`step-label ${i + 1 === step ? "text-fox-ink font-semibold" : "text-gray-500"}`}>
+                {label}
+              </span>
+            </div>
+          ))}
         </div>
 
         {/* Step 1: Mode Selector */}
