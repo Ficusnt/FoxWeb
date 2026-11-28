@@ -5,8 +5,8 @@
   "description": "FoxCapital web port — agendae.com.ar coefficient tables & expense PDF reports",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy dist/",
-    "build": "vite build",
+    "deploy": "wrangler pages deploy dist/",
+    "build": "vite build && node -e \"const fs=require('fs');fs.cpSync('functions','dist/functions',{recursive:true})\"",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
