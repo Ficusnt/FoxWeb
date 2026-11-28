@@ -198,14 +198,19 @@ const [fechaErrors, setFechaErrors] = useState<Set<number>>(new Set())
           })}
         </div>
         <div className="step-labels mt-2">
-          {stepLabels.map((label, i) => (
-            <div key={label} className="step-label-cell">
-              <span className={`step-label ${i + 1 === step ? "text-fox-ink font-semibold" : "text-gray-500"}`}>
-                {label}
-              </span>
-            </div>
-            {!isLast && <div className="step-line-label"></div>}
-          ))}
+          {stepLabels.map((label, i) => {
+            const isLast = i === 3
+            return (
+              <React.Fragment key={label}>
+                <div className="step-label-cell">
+                  <span className={`step-label ${i + 1 === step ? "text-fox-ink font-semibold" : "text-gray-500"}`}>
+                    {label}
+                  </span>
+                </div>
+                {!isLast && <div className="step-line-label"></div>}
+              </React.Fragment>
+            )
+          })}
         </div>
 
         {/* Step 1: Mode Selector */}
